@@ -1,3 +1,8 @@
+all: compile
+
+compile:
+	./gradlew :flink-sample:shadowJar
+
 list:
 	bundle exec kitchen $@
 

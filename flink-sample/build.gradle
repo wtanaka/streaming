@@ -1,0 +1,26 @@
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+mainClassName = 'com.wtanaka.WordCount'
+
+buildscript {
+	repositories {
+		jcenter()
+	}
+	dependencies {
+		classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
+	}
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'org.apache.flink:flink-core:1.1.2-hadoop1'
+    compile 'org.apache.flink:flink-java:1.1.2-hadoop1'
+    compile 'org.apache.flink:flink-streaming-java_2.10:1.1.2-hadoop1'
+    compile 'org.apache.flink:flink-optimizer_2.10:1.1.2-hadoop1'
+}
+
+
+sourceCompatibility = "1.7"
+targetCompatibility = "1.7"

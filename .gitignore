@@ -1,6 +1,10 @@
 *~
+/build
 /.bundle
+/flink-sample/build
 /.gradle
+/.idea
 /.kitchen
+/local.properties
 /roles
 /vendor
