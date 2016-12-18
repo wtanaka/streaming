@@ -17,6 +17,7 @@
  */
 package org.apache.beam.examples;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.beam.examples.WordCount.CountWords;
@@ -31,7 +32,9 @@ import org.apache.beam.sdk.transforms.Create;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.DoFnTester;
 import org.apache.beam.sdk.transforms.MapElements;
+import org.apache.beam.sdk.util.FileIOChannelFactory;
 import org.apache.beam.sdk.values.PCollection;
+import org.apache.flink.runtime.io.disk.iomanager.FileIOChannel;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -81,5 +84,12 @@ public class WordCountTest {
 
     PAssert.that(output).containsInAnyOrder(COUNTS_ARRAY);
     p.run().waitUntilFinish();
+  }
+
+  @Test
+  public void testError() throws IOException {
+    FileIOChannelFactory factory = new FileIOChannelFactory();
+    // Make sure this doesn't crash
+    factory.match("/usr/share/dict/american-english");
   }
 }

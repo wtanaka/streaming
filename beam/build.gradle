@@ -13,12 +13,19 @@ buildscript {
 	}
 }
 
+shadowJar {
+   transform(com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransformer) {
+      resource = 'reference.conf'
+   }
+}
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'org.apache.beam:beam-sdks-java-core:0.3.0-incubating'
 
     // I'm unclear if this is required to be included in the fatjar
     compile 'org.apache.beam:beam-runners-flink_2.10:0.3.0-incubating'
+    compile 'org.apache.flink:flink-runtime_2.10:1.1.2-hadoop1'
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.apache.beam:beam-runners-direct-java:0.3.0-incubating'
