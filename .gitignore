@@ -1,4 +1,6 @@
 *~
+/beam/build
+/beam/target
 /build
 /.bundle
 /flink-sample/build

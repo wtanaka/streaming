@@ -1,2 +1,2 @@
-// include ':app', ':flink-sample'
-include ':flink-sample'
+// include ':app', ':flink-sample', ':beam'
+include ':flink-sample', ':beam'
