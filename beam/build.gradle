@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
 
-mainClassName = 'org.apache.beam.examples.WordCount'
+mainClassName = 'com.wtanaka.streaming.beam.KafkaToKafka'
 
 buildscript {
 	repositories {
@@ -22,6 +22,8 @@ shadowJar {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'org.apache.beam:beam-sdks-java-core:0.3.0-incubating'
+    compile 'org.apache.flink:flink-connector-kafka-0.8_2.10:1.1.2-hadoop1'
+    compile 'org.apache.beam:beam-sdks-java-io-kafka:0.3.0-incubating'
 
     // I'm unclear if this is required to be included in the fatjar
     compile 'org.apache.beam:beam-runners-flink_2.10:0.3.0-incubating'
