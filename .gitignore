@@ -1,0 +1,6 @@
+*~
+/.bundle
+/.gradle
+/.kitchen
+/roles
+/vendor

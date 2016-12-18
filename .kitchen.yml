@@ -1,0 +1,45 @@
+---
+driver:
+  name: docker
+  use_cache: true
+  use_sudo: False
+platforms:
+  - name: ubuntu-16.04
+    driver_config:
+      image: ubuntu:16.04
+provisioner:
+  name: ansible_push
+  idempotency_test: true
+  playbook: kitchen-playbook.yml
+  support_older_version: true
+  verbose: v
+  ansible_playbook_bin: ansible-playbook
+suites:
+ - name: master
+   provisioner:
+     playbook: master-playbook.yml
+   driver:
+     hostname: flink-master
+     instance_name: flink-master
+     run_options: --network=flink_nw #--network-alias flink-master
+     forward:
+       - 16123:6123
+       - 18081:8081
+ - name: slave1
+   provisioner:
+     playbook: slave1-playbook.yml
+   driver:
+     hostname: flink-slave1
+     instance_name: flink-slave1
+     run_options: --network=flink_nw #--network-alias flink-slave1
+     links:
+     - flink-master:flink-master
+ - name: slave2
+   provisioner:
+     playbook: slave2-playbook.yml
+   driver:
+     hostname: flink-slave2
+     instance_name: flink-slave2
+     run_options: --network=flink_nw #--network-alias flink-slave2
+     links:
+     - flink-master:flink-master

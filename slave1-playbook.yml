@@ -1,0 +1,30 @@
+---
+- include: playbook-compat.yml
+- hosts: all
+  roles:
+  - {role: wtanaka.oracle-java}
+  - role: wtanaka.zookeeper
+    zookeeper_myid: 2
+    zookeeper_config:
+      tickTime: 2000
+      dataDir: /var/lib/zookeeper
+      clientPort: 2181
+      initLimit: 10
+      syncLimit: 5
+      "server.1": flink-master:2888:3888
+      "server.2": flink-slave1:2888:3888
+      "server.3": flink-slave2:2888:3888
+  - role: wtanaka.apache-kafka
+    kafka_user: kitchen
+    kafka_brokers:
+    - broker_id: 1
+      listeners: "PLAINTEXT://:9092"
+  - role: wtanaka.apache-flink
+    flink_version: "1.1.2"
+    flink_jobmanager_rpc_address: flink-master
+    flink_jobmanager_rpc_port: 6123
+    flink_is_master: False
+    flink_local_key_pattern: .kitchen/docker_id_rsa
+    flink_user: kitchen
+  - role: wtanaka.monit
+  - role: wtanaka.vim
