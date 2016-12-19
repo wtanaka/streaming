@@ -174,10 +174,10 @@ public class KafkaToKafka
             + options.getBroker() + " " + options.getGroup());
       Pipeline pipeline = Pipeline.create(options);
 
-      Properties p = new Properties();
-      p.setProperty("zookeeper.connect", options.getZookeeper());
-      p.setProperty("bootstrap.servers", options.getBroker());
-      p.setProperty("group.id", options.getGroup());
+      Properties kafkaConfig = new Properties();
+      kafkaConfig.setProperty("zookeeper.connect", options.getZookeeper());
+      kafkaConfig.setProperty("bootstrap.servers", options.getBroker());
+      kafkaConfig.setProperty("group.id", options.getGroup());
 
       String hostname = "UNKNOWN";
       try
@@ -191,29 +191,18 @@ public class KafkaToKafka
 
       try
       {
-         // this is the Flink consumer that reads the input to
-         // the program from a kafka topic.
-         FlinkKafkaConsumer08<String> kafkaConsumer =
-            new FlinkKafkaConsumer08<>(
-               options.getKafkaTopic(),
-               new SimpleStringSchema(), p);
-
+/*
          FlinkKafkaProducer08<String> kafkaProducer = new
             FlinkKafkaProducer08<String>(options.getOutputKafkaTopic(), new
-            SimpleStringSchema(), p);
+            SimpleStringSchema(), kafkaConfig);
+*/
 
-         PCollection<String> words = pipeline
-            .apply("StreamingWordCount",
-               Read.from(UnboundedFlinkSource.of(kafkaConsumer)))
-            .apply(ParDo.of(new ExtractWordsFn()))
-            .apply(Window.<String>into(FixedWindows.of(
-               Duration.standardSeconds(options.getWindowSize())))
-               .triggering(AfterWatermark.pastEndOfWindow())
-               .withAllowedLateness(Duration.ZERO)
-               .discardingFiredPanes());
-
-         PCollection<KV<String, Long>> wordCounts =
-            words.apply(Count.<String>perElement());
+         // this is the Flink consumer that reads the input to
+         // the program from a kafka topic.
+         final Read.Unbounded<String> kafkaIn = Read.from(
+            UnboundedFlinkSource.of(new FlinkKafkaConsumer08<>(
+               options.getKafkaTopic(),
+               new SimpleStringSchema(), kafkaConfig)));
 
          final PTransform<PCollection<String>, PDone> kafkaSink =
             KafkaIO.write()
@@ -222,7 +211,27 @@ public class KafkaToKafka
                .withValueCoder(StringUtf8Coder.of())
                .values();
 
-         wordCounts.apply(ParDo.of(new FormatAsStringFn())).apply(kafkaSink);
+         PCollection<String> words = pipeline
+            // Read lines from Kafka topic
+            .apply("StreamingWordCount", kafkaIn)
+            // Split lines into individual words
+            .apply(ParDo.of(new ExtractWordsFn()))
+            // Group into fixed-size windows
+            .apply(Window.<String>into(FixedWindows.of(
+               Duration.standardSeconds(options.getWindowSize())))
+               .triggering(AfterWatermark.pastEndOfWindow())
+               .withAllowedLateness(Duration.ZERO)
+               .discardingFiredPanes());
+
+         // Convert each word into a Word/Count key/value pair
+         PCollection<KV<String, Long>> wordCounts =
+            words.apply(Count.<String>perElement());
+
+         wordCounts
+            // Convert the KV pair into a string
+            .apply(ParDo.of(new FormatAsStringFn()))
+            // Output into Kafka topic
+            .apply(kafkaSink);
 
          pipeline.run();
       }
