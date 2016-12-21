@@ -20,6 +20,7 @@ package org.apache.beam.examples;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+
 import org.apache.beam.examples.WordCount.CountWords;
 import org.apache.beam.examples.WordCount.ExtractWordsFn;
 import org.apache.beam.examples.WordCount.FormatAsTextFn;
@@ -34,7 +35,6 @@ import org.apache.beam.sdk.transforms.DoFnTester;
 import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.util.FileIOChannelFactory;
 import org.apache.beam.sdk.values.PCollection;
-import org.apache.flink.runtime.io.disk.iomanager.FileIOChannel;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -62,13 +62,13 @@ public class WordCountTest {
                       CoreMatchers.hasItems("some", "input", "words"));
   }
 
-  static final String[] WORDS_ARRAY = new String[] {
+  private static final String[] WORDS_ARRAY = new String[] {
     "hi there", "hi", "hi sue bob",
     "hi sue", "", "bob hi"};
 
-  static final List<String> WORDS = Arrays.asList(WORDS_ARRAY);
+  private static final List<String> WORDS = Arrays.asList(WORDS_ARRAY);
 
-  static final String[] COUNTS_ARRAY = new String[] {
+  private static final String[] COUNTS_ARRAY = new String[] {
       "hi: 5", "there: 1", "sue: 2", "bob: 2"};
 
   /** Example test that tests a PTransform by using an in-memory input and inspecting the output. */
