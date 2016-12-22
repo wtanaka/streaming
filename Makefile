@@ -1,7 +1,7 @@
 all: compile
 
 compile:
-	./gradlew :flink-sample:shadowJar
+	./gradlew :flink-sample:shadowJar :beam:shadowJar
 
 list: vendor/bundle
 	bundle exec kitchen $@
