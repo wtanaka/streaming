@@ -26,5 +26,6 @@
     flink_is_master: False
     flink_local_key_pattern: .kitchen/docker_id_rsa
     flink_user: kitchen
+    flink_taskmanager_number_of_task_slots: 8
   - role: wtanaka.monit
   - role: wtanaka.vim
