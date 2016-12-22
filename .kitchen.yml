@@ -23,8 +23,10 @@ suites:
      instance_name: flink-master
      run_options: --network=flink_nw #--network-alias flink-master
      forward:
-       - 16123:6123
-       - 18081:8081
+       - 16123:6123  # Flink
+       - 18081:8081  # Flink web interface
+       - 19092:9092  # Kafka
+       - 12181:2181  # Zookeeper
  - name: slave1
    provisioner:
      playbook: slave1-playbook.yml
