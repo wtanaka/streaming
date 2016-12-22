@@ -3,13 +3,13 @@ all: compile
 compile:
 	./gradlew :flink-sample:shadowJar
 
-list:
+list: vendor/bundle
 	bundle exec kitchen $@
 
-converge: user_network galaxy
+converge: vendor/bundle user_network galaxy
 	bundle exec kitchen $@
 
-destroy:
+destroy: vendor/bundle
 	bundle exec kitchen $@
 	docker network rm flink_nw
 
@@ -18,3 +18,11 @@ user_network:
 
 galaxy:
 	ansible-galaxy install --force --ignore-errors -r requirements.txt -p roles/
+
+vendor/bundle: bundle-bin
+	bundle install --path "$@"
+
+bundle-bin: FORCE
+	command -v bundle || gem install --user-install --no-ri --no-rdoc
+
+FORCE:
