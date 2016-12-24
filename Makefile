@@ -3,10 +3,17 @@ all: compile
 compile:
 	./gradlew :flink-sample:shadowJar :beam:shadowJar
 
-list: vendor/bundle
+converge: vendor/bundle user_network galaxy
 	bundle exec kitchen $@
 
-converge: vendor/bundle user_network galaxy
+lsflink:
+	docker exec flink-master /opt/flink-1.1.2/bin/flink list
+
+lstopic:
+	docker exec flink-master /opt/kafka_2.11-0.10.0.1/bin/kafka-topics.sh \
+		--zookeeper localhost:2181 --list
+
+list: vendor/bundle
 	bundle exec kitchen $@
 
 destroy: vendor/bundle
