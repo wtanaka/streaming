@@ -1,10 +1,15 @@
+KITCHEN=bundle exec kitchen
+
 all: compile
+
+converge: vendor/bundle user_network galaxy
+	$(KITCHEN) $@
+
+test: vendor/bundle user_network galaxy
+	$(KITCHEN) $@
 
 compile:
 	./gradlew :flink-sample:shadowJar :beam:shadowJar
-
-converge: vendor/bundle user_network galaxy
-	bundle exec kitchen $@
 
 lsflink:
 	docker exec flink-master /opt/flink-1.1.2/bin/flink list
@@ -14,10 +19,10 @@ lstopic:
 		--zookeeper localhost:2181 --list
 
 list: vendor/bundle
-	bundle exec kitchen $@
+	$(KITCHEN) $@
 
 destroy: vendor/bundle
-	bundle exec kitchen $@
+	$(KITCHEN) $@
 	docker network rm flink_nw
 
 user_network:
