@@ -17,8 +17,9 @@
   - role: wtanaka.apache-kafka
     kafka_user: kitchen
     kafka_brokers:
-    - broker_id: 0
-      listeners: "PLAINTEXT://:9092"
+    - listeners: "PLAINTEXT://:9092"
+      file_basename: kafka
+      log_dirs: "/tmp/kafka-logs-kafka"
   - role: wtanaka.apache-flink
     flink_version: "1.1.2"
     flink_jobmanager_rpc_address: flink-master
