@@ -8,12 +8,16 @@ platforms:
     driver_config:
       image: ubuntu:16.04
 provisioner:
+  # Avoid downloading busser
+  chef_bootstrap_url: nil
   name: ansible_push
   idempotency_test: true
   playbook: kitchen-playbook.yml
   support_older_version: true
   verbose: v
   ansible_playbook_bin: ansible-playbook
+  use_sudo: <% if ENV["TRAVIS"] then true else false end %>
+
 suites:
  - name: master
    provisioner:
@@ -45,3 +49,9 @@ suites:
      run_options: --network=flink_nw #--network-alias flink-slave2
      links:
      - flink-master:flink-master
+
+verifier:
+  name: serverspec
+  additional_install_command: mkdir -p /tmp/kitchen
+  default_pattern: true
+  remote_exec: true
