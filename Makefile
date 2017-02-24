@@ -23,7 +23,10 @@ list: vendor/bundle
 
 destroy: vendor/bundle
 	$(KITCHEN) $@
-	docker network rm flink_nw
+	-docker rm flink-master
+	-docker rm flink-slave1
+	-docker rm flink-slave2
+	-docker network rm flink_nw
 
 user_network:
 	docker network inspect flink_nw || docker network create -d bridge flink_nw
