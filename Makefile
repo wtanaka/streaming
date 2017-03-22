@@ -32,7 +32,7 @@ user_network:
 	docker network inspect flink_nw || docker network create -d bridge flink_nw
 
 galaxy:
-	ansible-galaxy install --force --ignore-errors -r requirements.txt -p roles/
+	ansible-galaxy install --force --ignore-errors -r galaxy-requirements.txt -p roles/
 
 vendor/bundle: bundle-bin
 	bundle install --path "$@"
