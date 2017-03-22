@@ -7,14 +7,10 @@ import java.util.Properties;
 import org.apache.beam.runners.flink.FlinkPipelineOptions;
 import org.apache.beam.runners.flink.FlinkRunner;
 import org.apache.beam.runners.flink.translation.wrappers.streaming.io
-   .UnboundedFlinkSink;
-import org.apache.beam.runners.flink.translation.wrappers.streaming.io
    .UnboundedFlinkSource;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.coders.StringUtf8Coder;
 import org.apache.beam.sdk.io.Read;
-import org.apache.beam.sdk.io.TextIO;
-import org.apache.beam.sdk.io.Write;
 import org.apache.beam.sdk.io.kafka.KafkaIO;
 import org.apache.beam.sdk.options.Default;
 import org.apache.beam.sdk.options.Description;
@@ -33,7 +29,6 @@ import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.PDone;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer08;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer08;
 import org.apache.flink.streaming.util.serialization.SimpleStringSchema;
 import org.joda.time.Duration;
 
@@ -57,7 +52,7 @@ public class KafkaToKafka
    private static class ExtractWordsFn extends DoFn<String, String>
    {
       private final Aggregator<Long, Long> emptyLines =
-         createAggregator("emptyLines", new Sum.SumLongFn());
+         createAggregator("emptyLines", Sum.ofLongs());
 
       @ProcessElement
       public void processElement(ProcessContext c)
@@ -204,7 +199,7 @@ public class KafkaToKafka
                new SimpleStringSchema(), kafkaConfig)));
 
          final PTransform<PCollection<String>, PDone> kafkaSink =
-            KafkaIO.write()
+            KafkaIO.<String, String>write()
                .withBootstrapServers(options.getBroker())
                .withTopic(options.getOutputKafkaTopic())
                .withValueCoder(StringUtf8Coder.of())

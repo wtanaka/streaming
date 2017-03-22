@@ -115,12 +115,6 @@ public class MinimalWordCount {
      .apply(TextIO.Write.to("wordcounts"));
 
     // Run the pipeline.
-      try {
-          p.run().waitUntilFinish();
-      } catch (IOException e) {
-          e.printStackTrace();
-      } catch (InterruptedException e) {
-          e.printStackTrace();
-      }
+     p.run().waitUntilFinish();
   }
 }

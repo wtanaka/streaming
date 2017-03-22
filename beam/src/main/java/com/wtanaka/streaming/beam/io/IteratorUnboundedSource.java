@@ -2,7 +2,6 @@ package com.wtanaka.streaming.beam.io;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -11,7 +10,6 @@ import org.apache.beam.sdk.coders.Coder;
 import org.apache.beam.sdk.coders.SerializableCoder;
 import org.apache.beam.sdk.io.UnboundedSource;
 import org.apache.beam.sdk.options.PipelineOptions;
-import org.apache.flink.hadoop.shaded.com.google.protobuf.ByteString;
 
 import com.wtanaka.streaming.beam.util.SerializableIterator;
 

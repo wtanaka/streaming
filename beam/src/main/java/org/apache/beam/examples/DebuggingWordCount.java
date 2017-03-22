@@ -96,9 +96,9 @@ public class DebuggingWordCount {
      * in a dashboard, etc.
      */
     private final Aggregator<Long, Long> matchedWords =
-        createAggregator("matchedWords", new Sum.SumLongFn());
+        createAggregator("matchedWords", Sum.ofLongs());
     private final Aggregator<Long, Long> unmatchedWords =
-        createAggregator("umatchedWords", new Sum.SumLongFn());
+        createAggregator("umatchedWords", Sum.ofLongs());
 
     @ProcessElement
     public void processElement(ProcessContext c) {
@@ -160,12 +160,6 @@ public class DebuggingWordCount {
         KV.of("stomach", 1L));
     PAssert.that(filteredWords).containsInAnyOrder(expectedResults);
 
-    try {
-      p.run().waitUntilFinish();
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
+    p.run().waitUntilFinish();
   }
 }

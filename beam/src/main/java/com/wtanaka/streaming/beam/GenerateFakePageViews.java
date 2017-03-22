@@ -156,7 +156,7 @@ public class GenerateFakePageViews
                String.class));
 
          final PTransform<PCollection<String>, PDone> kafkaSink =
-            KafkaIO.write()
+            KafkaIO.<String, String>write()
                .withBootstrapServers(options.getBroker())
                .withTopic(options.getOutputKafkaTopic())
                .withValueCoder(StringUtf8Coder.of())

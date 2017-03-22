@@ -90,7 +90,7 @@ public class WordCount {
    */
   static class ExtractWordsFn extends DoFn<String, String> {
     private final Aggregator<Long, Long> emptyLines =
-        createAggregator("emptyLines", new Sum.SumLongFn());
+        createAggregator("emptyLines", Sum.ofLongs());
 
     @ProcessElement
     public void processElement(ProcessContext c) {
@@ -129,7 +129,7 @@ public class WordCount {
   public static class CountWords extends PTransform<PCollection<String>,
       PCollection<KV<String, Long>>> {
     @Override
-    public PCollection<KV<String, Long>> apply(PCollection<String> lines) {
+    public PCollection<KV<String, Long>> expand(PCollection<String> lines) {
 
       // Convert lines of text into individual words.
       PCollection<String> words = lines.apply(
@@ -185,12 +185,6 @@ public class WordCount {
           MapElements.via(new FormatAsTextFn()));
     countsAsText.apply("WriteCounts", TextIO.Write.to(options.getOutput()));
 
-    try {
-      p.run().waitUntilFinish();
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
+    p.run().waitUntilFinish();
   }
 }
