@@ -6,6 +6,7 @@ converge: vendor/bundle user_network galaxy
 	$(KITCHEN) $@
 
 test: vendor/bundle user_network galaxy
+	./gradlew test
 	$(KITCHEN) $@
 
 compile:
