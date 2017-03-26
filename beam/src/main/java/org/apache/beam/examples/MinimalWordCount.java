@@ -28,8 +28,6 @@ import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.transforms.SimpleFunction;
 import org.apache.beam.sdk.values.KV;
 
-import java.io.IOException;
-
 
 /**
  * An wtanaka that counts words in Shakespeare.

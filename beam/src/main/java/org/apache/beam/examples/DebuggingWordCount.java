@@ -17,10 +17,10 @@
  */
 package org.apache.beam.examples;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
+
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.io.TextIO;
 import org.apache.beam.sdk.options.Default;

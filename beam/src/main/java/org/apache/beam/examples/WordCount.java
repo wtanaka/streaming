@@ -36,8 +36,6 @@ import org.apache.beam.sdk.transforms.Sum;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 
-import java.io.IOException;
-
 /**
  * An wtanaka that counts words in Shakespeare and includes Beam best practices.
  *

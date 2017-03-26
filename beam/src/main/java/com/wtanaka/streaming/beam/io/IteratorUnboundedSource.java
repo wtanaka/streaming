@@ -1,3 +1,6 @@
+/*
+ * Copyright (C) Wesley Tanaka <http://wtanaka.com>
+ */
 package com.wtanaka.streaming.beam.io;
 
 import java.io.IOException;

@@ -19,6 +19,7 @@ package org.apache.beam.examples;
 
 import java.io.IOException;
 import java.util.concurrent.ThreadLocalRandom;
+
 import org.apache.beam.examples.common.ExampleBigQueryTableOptions;
 import org.apache.beam.examples.common.ExampleOptions;
 import org.apache.beam.examples.common.WriteWindowedFilesDoFn;
