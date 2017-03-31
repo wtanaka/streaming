@@ -1,0 +1,61 @@
+plugins {
+    id "com.jfrog.bintray" version "1.7.3"
+}
+apply plugin: 'java'
+apply plugin: 'maven-publish'
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    publications = ['MyPublication']
+    pkg {
+        repo = 'maven'
+        name = 'beam'
+        userOrg = System.getenv('BINTRAY_USER')
+        licenses = ["GPL-3.0"]
+        vcsUrl = 'https://github.com/wtanaka/streaming.git'
+        version {
+            name = '0.0.0'
+            desc = 'Apache Beam Utility Code'
+            released = new Date()
+            vcsTag = '0.0.0'
+        }
+    }
+}
+
+//task sourceJar(type: Jar) {
+//    from sourceSets.main.allJava
+//    classifier "sources"
+//}
+//
+//task javadocJar(type: Jar, dependsOn: javadoc) {
+//    from javadoc.destinationDir
+//    classifier = 'javadoc'
+//}
+
+publishing {
+    publications {
+        MyPublication(MavenPublication) {
+            from components.java
+            // artifact sourceJar
+            // artifact javadocJar
+            groupId 'com.wtanaka'
+            artifactId 'beam'
+            version '0.0.0'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'org.apache.beam:beam-sdks-java-core:0.6.0'
+
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.apache.beam:beam-runners-direct-java:0.6.0'
+    testCompile 'org.hamcrest:hamcrest-all:1.3'
+    testCompile 'org.slf4j:slf4j-api:1.7.14'
+    testCompile 'org.slf4j:slf4j-jdk14:1.7.14'
+}
+
+sourceCompatibility = "1.7"
+targetCompatibility = "1.7"
