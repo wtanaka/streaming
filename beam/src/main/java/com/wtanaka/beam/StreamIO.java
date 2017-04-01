@@ -7,16 +7,23 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.Reader;
+import java.io.Serializable;
 import java.io.StreamTokenizer;
+import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 
 import org.apache.beam.sdk.coders.Coder;
 import org.apache.beam.sdk.coders.StringUtf8Coder;
 import org.apache.beam.sdk.transforms.Create;
+import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.PTransform;
+import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.PBegin;
 import org.apache.beam.sdk.values.PCollection;
+import org.apache.beam.sdk.values.PDone;
 
 import static java.io.StreamTokenizer.TT_EOF;
 
@@ -114,9 +121,58 @@ public class StreamIO
                m_inputStream);
             final PTransform<PBegin, PCollection<String>> transform =
                Create.<String>of((Iterable<String>) stream)
-               .withCoder(DEFAULT_TEXT_CODER);
+                  .withCoder(DEFAULT_TEXT_CODER);
             return input.apply(transform);
          }
       }
+   }
+
+   public static class Write
+   {
+      public static class StreamWriterDoFn extends DoFn<String, Void>
+         implements Serializable
+      {
+         private final transient PrintStream m_printStream;
+
+         public StreamWriterDoFn(PrintStream printStream)
+         {
+            m_printStream = printStream;
+         }
+
+         @ProcessElement
+         public void processElement(ProcessContext c)
+         {
+            String element = c.element();
+            m_printStream.print(element);
+         }
+      }
+
+      public static class Bound
+         extends PTransform<PCollection<String>, PDone>
+      {
+         private final PrintStream m_printStream;
+
+         public Bound(OutputStream outputStream)
+         {
+            try
+            {
+               m_printStream = new PrintStream(outputStream, true, "UTF-8");
+            }
+            catch (UnsupportedEncodingException e)
+            {
+               throw new RuntimeException("Could not find encoding UTF-8");
+            }
+         }
+
+         @Override
+         public PDone expand(final PCollection<String> input)
+         {
+            final PCollection<Void> almostdone = input.apply(
+               ParDo.of(new StreamWriterDoFn(m_printStream)));
+
+            return PDone.in(input.getPipeline());
+         }
+      }
+
    }
 }
