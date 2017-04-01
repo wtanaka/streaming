@@ -6,6 +6,7 @@ package com.wtanaka.beam;
 import java.io.InputStream;
 import java.util.Iterator;
 
+import org.apache.beam.sdk.coders.ByteArrayCoder;
 import org.apache.beam.sdk.transforms.Create;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.PTransform;
@@ -80,7 +81,7 @@ public class StreamIO
          public PCollection<byte[]> expand(final PBegin input)
          {
             return input.apply(Create.<byte[]>of(new StreamLineIterable
-               (m_inputStream)));
+               (m_inputStream)).withCoder(ByteArrayCoder.of()));
          }
       }
 
