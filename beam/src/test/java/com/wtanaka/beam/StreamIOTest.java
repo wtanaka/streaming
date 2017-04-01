@@ -26,12 +26,9 @@ public class StreamIOTest
       Pipeline pipeline = TestPipeline.create();
       final ByteArrayInputStream bais = new ByteArrayInputStream(new byte[]
          {0x68, 0x0a, 0x65, 0x0a, 0x6c, 0x0a, 0x6c, 0x0a, 0x6f, 0x0a});
-      PCollection<byte[]> bytes = pipeline.apply(
+      PCollection<String> lines = pipeline.apply(
          new StreamIO.Read.Bound(bais));
-      PAssert.that(bytes).containsInAnyOrder(new byte[]{0x68, 0x0a},
-         new byte[]
-            {0x65, 0x0a}, new byte[]{0x6c, 0x0a}, new byte[]{0x6c, 0x0a},
-         new byte[]
-            {0x6f, 0x0a});
+      PAssert.that(lines).containsInAnyOrder(new String[] {"h", "e", "l",
+         "l", "o"});
    }
 }
