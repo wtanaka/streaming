@@ -1,36 +1,79 @@
 /*
- * Copyright (C) 2017 Wesley Tanaka <http://wtanaka.com>
+ * com.wtanaka.beam
+ *
+ * Copyright (C) 2017 Wesley Tanaka <http://wtanaka.com/>
+ *
+ * This program is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package com.wtanaka.beam;
 
+import org.apache.beam.sdk.coders.KvCoder;
+import org.apache.beam.sdk.coders.StringUtf8Coder;
+import org.apache.beam.sdk.coders.VarIntCoder;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.PTransform;
 import org.apache.beam.sdk.transforms.ParDo;
+import org.apache.beam.sdk.transforms.SerializableFunction;
+import org.apache.beam.sdk.transforms.WithKeys;
+import org.apache.beam.sdk.util.state.StateSpec;
+import org.apache.beam.sdk.util.state.StateSpecs;
+import org.apache.beam.sdk.util.state.ValueState;
+import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 
+import com.google.common.base.MoreObjects;
+
 /**
- * Implementation of nl
+ * Implementation of an "approximate" version of nl
  */
 public class Nl extends PTransform<PCollection<String>, PCollection<String>>
 {
    private static final long serialVersionUID = 1L;
 
-   private int m_lineNum = 0;
+   public static class CountingDoFn extends DoFn<KV<Integer, String>, String>
+   {
+      private static final long serialVersionUID = 1L;
+      private static final String STATE_ID = "countState";
+      private static final int FIRST_LINE_NUM = 1;
+
+      @StateId(STATE_ID)
+      private final StateSpec<Object, ValueState<Integer>>
+         stateCell = StateSpecs.value(VarIntCoder.of());
+
+      @ProcessElement
+      public void process(ProcessContext context, @StateId(STATE_ID)
+         ValueState<Integer> state)
+      {
+         Integer approxLineNum = MoreObjects.firstNonNull(state.read(),
+            FIRST_LINE_NUM);
+         final KV<Integer, String> input = context.element();
+         final String output = String.valueOf(approxLineNum) + "\t" +
+            input.getValue();
+         context.output(output);
+         state.write(approxLineNum + 1);
+      }
+   }
 
    @Override
    public PCollection<String> expand(final PCollection<String> input)
    {
-      return input.apply(ParDo.of(new DoFn<String, String>()
-      {
-         private static final long serialVersionUID = 1L;
-
-         @ProcessElement
-         public void processElement(ProcessContext context)
-         {
-            String input = context.element();
-            final String newString = String.valueOf(m_lineNum) + " " + input;
-            context.output(newString);
-         }
-      }));
+      // Attach an arbitrary hard-coded key to each string so they share
+      // the same DoFn state
+      final PCollection<KV<Integer, String>> keyedInput = input.apply(
+         WithKeys.of((SerializableFunction<String, Integer>) s -> 3))
+         .setCoder(KvCoder.of(VarIntCoder.of(), StringUtf8Coder.of()));
+      return keyedInput.apply(ParDo.of(new CountingDoFn()));
    }
 }
