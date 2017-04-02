@@ -51,6 +51,7 @@ public class KafkaToKafka
     */
    private static class ExtractWordsFn extends DoFn<String, String>
    {
+      private static final long serialVersionUID = -4759214926686427674L;
       private final Aggregator<Long, Long> emptyLines =
          createAggregator("emptyLines", Sum.ofLongs());
 
@@ -81,6 +82,8 @@ public class KafkaToKafka
     */
    public static class FormatAsStringFn extends DoFn<KV<String, Long>, String>
    {
+      private static final long serialVersionUID = -7661898092810755425L;
+
       @ProcessElement
       public void processElement(ProcessContext c)
       {

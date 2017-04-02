@@ -38,6 +38,7 @@ public class StringValueOf<T> extends PTransform<PCollection<T>,
       return input.apply(MapElements.via((T object) -> String.valueOf(object))
          .withOutputType(new TypeDescriptor<String>()
          {
+            private static final long serialVersionUID = 5322857615314221873L;
          }));
    }
 }

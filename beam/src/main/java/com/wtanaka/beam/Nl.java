@@ -13,6 +13,8 @@ import org.apache.beam.sdk.values.PCollection;
  */
 public class Nl extends PTransform<PCollection<String>, PCollection<String>>
 {
+   private static final long serialVersionUID = 1L;
+
    private int m_lineNum = 0;
 
    @Override
@@ -20,6 +22,8 @@ public class Nl extends PTransform<PCollection<String>, PCollection<String>>
    {
       return input.apply(ParDo.of(new DoFn<String, String>()
       {
+         private static final long serialVersionUID = 1L;
+
          @ProcessElement
          public void processElement(ProcessContext context)
          {

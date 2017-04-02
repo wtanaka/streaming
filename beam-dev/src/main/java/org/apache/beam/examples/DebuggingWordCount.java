@@ -85,6 +85,9 @@ public class DebuggingWordCount {
      */
     private static final Logger LOG = LoggerFactory.getLogger(FilterTextFn.class);
 
+
+    private static final long serialVersionUID = -1608667622788542929L;
+
     private final Pattern filter;
     public FilterTextFn(String pattern) {
       filter = Pattern.compile(pattern);

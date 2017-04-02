@@ -11,6 +11,8 @@ import org.apache.beam.sdk.values.PCollection;
  */
 public class Cat extends PTransform<PCollection<String>, PCollection<String>>
 {
+   private static final long serialVersionUID = 4757131243436350384L;
+
    @Override
    public PCollection<String> expand(final PCollection<String> input)
    {

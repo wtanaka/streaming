@@ -103,6 +103,8 @@ public class SocketTextStreamWordCount
       implements FlatMapFunction<String, Tuple2<String, Integer>>
    {
 
+      private static final long serialVersionUID = -1478794133680370856L;
+
       @Override
       public void flatMap(String value,
                           Collector<Tuple2<String, Integer>> out)

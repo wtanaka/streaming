@@ -107,6 +107,7 @@ public class StreamIO
       public static class Bound
          extends PTransform<PBegin, PCollection<String>>
       {
+         private static final long serialVersionUID = -8522252199996579879L;
          private final InputStream m_inputStream;
 
          public Bound(InputStream inputStream)
@@ -132,6 +133,7 @@ public class StreamIO
       public static class StreamWriterDoFn extends DoFn<String, Void>
          implements Serializable
       {
+         private static final long serialVersionUID = -4797179060913460533L;
          private final transient PrintStream m_printStream;
 
          public StreamWriterDoFn(PrintStream printStream)
@@ -150,6 +152,7 @@ public class StreamIO
       public static class Bound
          extends PTransform<PCollection<String>, PDone>
       {
+         private static final long serialVersionUID = -8079463736231313274L;
          private final PrintStream m_printStream;
 
          public Bound(OutputStream outputStream)
