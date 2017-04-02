@@ -62,6 +62,10 @@ publishing {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'org.apache.beam:beam-sdks-java-core:0.6.0'
+    compile 'org.apache.beam:beam-sdks-java-extensions-sorter:0.6.0'
+    compile 'org.apache.hadoop:hadoop-core:0.20.2'
+
+
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.apache.beam:beam-runners-direct-java:0.6.0'
