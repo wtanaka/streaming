@@ -33,7 +33,7 @@ import static java.io.StreamTokenizer.TT_EOF;
  */
 public class StreamIO
 {
-   public static final Coder<String> DEFAULT_TEXT_CODER =
+   private static final Coder<String> DEFAULT_TEXT_CODER =
       StringUtf8Coder.of();
 
    public static class Read
