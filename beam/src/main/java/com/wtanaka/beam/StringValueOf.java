@@ -21,6 +21,7 @@ package com.wtanaka.beam;
 
 import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.PTransform;
+import org.apache.beam.sdk.transforms.SerializableFunction;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.TypeDescriptor;
 
@@ -35,7 +36,8 @@ public class StringValueOf<T> extends PTransform<PCollection<T>,
    @Override
    public PCollection<String> expand(final PCollection<T> input)
    {
-      return input.apply(MapElements.via((T object) -> String.valueOf(object))
+      return input.apply(MapElements.via(
+         (SerializableFunction<T, String>) String::valueOf)
          .withOutputType(new TypeDescriptor<String>()
          {
             private static final long serialVersionUID = 5322857615314221873L;
