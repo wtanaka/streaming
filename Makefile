@@ -5,12 +5,12 @@ all: compile
 converge: vendor/bundle user_network galaxy
 	$(KITCHEN) $@
 
-test: vendor/bundle user_network galaxy
+test: vendor/bundle user_network galaxy compile
 	./gradlew test
 	$(KITCHEN) $@
 
 compile:
-	./gradlew :flink-sample:shadowJar :beam-dev:shadowJar
+	./gradlew :flink-sample:shadowJar :beam-dev:shadowJar :beam:shadowJar
 
 lsflink:
 	docker exec flink-master /opt/flink-1.1.2/bin/flink list
