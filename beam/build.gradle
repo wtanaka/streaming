@@ -2,7 +2,20 @@ plugins {
     id "com.jfrog.bintray" version "1.7.3"
 }
 apply plugin: 'java'
+apply plugin: 'jacoco'
 apply plugin: 'maven-publish'
+
+jacocoTestCoverageVerification {
+   violationRules {
+      rule {
+         limit {
+            minimum = 0.5
+         }
+      }
+   }
+}
+
+
 
 bintray {
     user = System.getenv('BINTRAY_USER')
@@ -59,3 +72,5 @@ dependencies {
 
 sourceCompatibility = "1.8"
 targetCompatibility = "1.8"
+
+test.finalizedBy "jacocoTestCoverageVerification"
