@@ -39,6 +39,12 @@ import org.junit.runners.JUnit4;
 public class StreamIOTest
 {
    @Test
+   public void testConstructor()
+   {
+      new StreamIO.Read(System.in);
+   }
+
+   @Test
    public void testReadBound()
    {
       final Pipeline pipeline = TestPipeline.create();
