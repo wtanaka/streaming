@@ -37,18 +37,6 @@ public class StringValueOfTest
    @Rule
    public final transient TestPipeline m_pipeline = TestPipeline.create();
 
-   @Before
-   public void setUp() throws Exception
-   {
-
-   }
-
-   @After
-   public void tearDown() throws Exception
-   {
-
-   }
-
    @Test
    public void testExpand() throws Exception
    {
