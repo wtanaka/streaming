@@ -46,6 +46,10 @@ import static java.io.StreamTokenizer.TT_EOF;
 /**
  * Contains bindings between InputStream and PTransform, for experimenting
  * with DirectRunner
+ *
+ * This class is currently not working; I believe it may be because
+ * DirectRunner serializes DoFn classes between elements in a stream to
+ * help application developers write non-buggy code.
  */
 public class StreamIO
 {
@@ -154,12 +158,16 @@ public class StreamIO
          public StreamWriterDoFn(PrintStream printStream)
          {
             m_printStream = printStream;
+            assert m_printStream != null;
          }
 
          @ProcessElement
          public void processElement(ProcessContext c)
          {
             String element = c.element();
+            // TODO: This needs to hold for this class to work, but does
+            // not currently, even inside of DirectRunner
+            assert m_printStream != null;
             m_printStream.print(element);
          }
       }
