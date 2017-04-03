@@ -45,7 +45,7 @@ public class LoggingIOTest
          CountingInput.upTo(10L));
       final PCollection<String> strings = longs.apply(
          new StringValueOf<>());
-      strings.apply(LoggingIO.write("LoggingIOTest", Level.SEVERE));
+      strings.apply(LoggingIO.write("LoggingIOTest", Level.FINEST));
       m_pipeline.run();
    }
 }
