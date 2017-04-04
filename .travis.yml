@@ -11,9 +11,7 @@ script:
 - make test
 deploy:
 - provider: script
-  script: >
-    git fetch --unshallow;
-    ./gradlew :beam:bintrayUpload
+  script: "git fetch --unshallow; ./gradlew :beam:bintrayUpload"
 after_failure:
 - "(cat .kitchen/logs/*.log | grep -v '^I, ')"
 env:
