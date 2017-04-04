@@ -25,17 +25,20 @@ bintray {
    user = System.getenv('BINTRAY_USER')
    key = System.getenv('BINTRAY_KEY')
    publications = ['MyPublication']
+   publish = true
+   override = true
    pkg {
       repo = 'maven'
       name = 'beam'
       userOrg = System.getenv('BINTRAY_USER')
+      desc = 'Apache Beam Utility Code'
       licenses = ["GPL-3.0"]
       issueTrackerUrl = 'https://github.com/wtanaka/streaming/issues'
       vcsUrl = 'https://github.com/wtanaka/streaming.git'
       websiteUrl = 'https://wtanaka.com/beam'
+      publicDownloadNumbers = true
       version {
          name = project.version
-         desc = 'Apache Beam Utility Code'
          released = new Date()
       }
    }
