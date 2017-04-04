@@ -28,18 +28,18 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test StdinReader
+ * Test StdinUnboundedReader
  */
-public class StdinReaderTest
+public class StdinUnboundedReaderTest
 {
    private ByteArrayInputStream m_bytes;
-   private StdinReader m_reader;
+   private StdinUnboundedReader m_reader;
 
    @Before
    public void setUp()
    {
       m_bytes = new ByteArrayInputStream(new byte[]{0x65, 0x0a, 0x66, 0x0a});
-      m_reader = new StdinReader(new StdinSource(), m_bytes);
+      m_reader = new StdinUnboundedReader(new StdinUnboundedSource(), m_bytes);
    }
 
    @Test
@@ -103,6 +103,6 @@ public class StdinReaderTest
    @Test
    public void testConstruct()
    {
-      new StdinReader(null);
+      new StdinUnboundedReader(null);
    }
 }

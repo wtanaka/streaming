@@ -60,7 +60,7 @@ public class NlTest implements Serializable
    {
       final PCollection<String> output =
          m_pipeline.apply(Create.empty(StringUtf8Coder.of()))
-            .apply(new Nl());
+            .apply(new Nl.Transform());
       PAssert.that(output).empty();
       m_pipeline.run();
    }
@@ -69,7 +69,7 @@ public class NlTest implements Serializable
    public void testOne()
    {
       final PCollection<String> source = m_pipeline.apply(Create.of("A"));
-      final PCollection<String> output = source.apply(new Nl());
+      final PCollection<String> output = source.apply(new Nl.Transform());
       PAssert.that(output).containsInAnyOrder("1\tA");
       m_pipeline.run();
    }
@@ -79,7 +79,7 @@ public class NlTest implements Serializable
    {
       final Create.Values<String> threeLetters = Create.of("A", "B", "C");
       final PCollection<String> source = m_pipeline.apply(threeLetters);
-      final PCollection<String> output = source.apply(new Nl());
+      final PCollection<String> output = source.apply(new Nl.Transform());
       // Not sure what order the lines came into Nl so we'll
       // split it apart again
       final PCollection<String> tokens = output.apply(Regex.split("\t"));

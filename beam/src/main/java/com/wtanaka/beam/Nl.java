@@ -33,47 +33,56 @@ import org.apache.beam.sdk.util.state.ValueState;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 
-import com.google.common.base.MoreObjects;
-
 /**
  * Implementation of an "approximate" version of nl
  */
-public class Nl extends PTransform<PCollection<String>, PCollection<String>>
+public class Nl
 {
-   private static final long serialVersionUID = 1L;
-
-   public static class CountingDoFn extends DoFn<KV<Integer, String>, String>
+   public static class Transform extends PTransform<PCollection<String>,
+      PCollection<String>>
    {
       private static final long serialVersionUID = 1L;
-      private static final String STATE_ID = "countState";
-      private static final int FIRST_LINE_NUM = 1;
 
-      @StateId(STATE_ID)
-      private final StateSpec<Object, ValueState<Integer>>
-         stateCell = StateSpecs.value(VarIntCoder.of());
-
-      @ProcessElement
-      public void process(ProcessContext context, @StateId(STATE_ID)
-         ValueState<Integer> state)
+      public static class CountingDoFn
+         extends DoFn<KV<Integer, String>, String>
       {
-         Integer approxLineNum = MoreObjects.firstNonNull(state.read(),
-            FIRST_LINE_NUM);
-         final KV<Integer, String> input = context.element();
-         final String output = String.valueOf(approxLineNum) + "\t" +
-            input.getValue();
-         context.output(output);
-         state.write(approxLineNum + 1);
+         private static final long serialVersionUID = 1L;
+         private static final String STATE_ID = "countState";
+         private static final int FIRST_LINE_NUM = 1;
+
+         @StateId(STATE_ID)
+         private final StateSpec<Object, ValueState<Integer>>
+            stateCell = StateSpecs.value(VarIntCoder.of());
+
+         @ProcessElement
+         public void process(ProcessContext context, @StateId(STATE_ID)
+            ValueState<Integer> state)
+         {
+            final Integer stateVal = state.read();
+            final int approxLineNum =
+               (stateVal == null ? FIRST_LINE_NUM : stateVal);
+            state.write(approxLineNum + 1);
+            final String nonKeyedInput = context.element().getValue();
+            final String output = String.valueOf(approxLineNum) + "\t" +
+               nonKeyedInput;
+            context.output(output);
+         }
+      }
+
+      @Override
+      public PCollection<String> expand(final PCollection<String> input)
+      {
+         // Attach an arbitrary hard-coded key to each string so they share
+         // the same DoFn state
+         final PCollection<KV<Integer, String>> keyedInput = input.apply(
+            WithKeys.of((SerializableFunction<String, Integer>) s -> 3))
+            .setCoder(KvCoder.of(VarIntCoder.of(), StringUtf8Coder.of()));
+         return keyedInput.apply(ParDo.of(new CountingDoFn()));
       }
    }
 
-   @Override
-   public PCollection<String> expand(final PCollection<String> input)
+   public static void main(String[] args)
    {
-      // Attach an arbitrary hard-coded key to each string so they share
-      // the same DoFn state
-      final PCollection<KV<Integer, String>> keyedInput = input.apply(
-         WithKeys.of((SerializableFunction<String, Integer>) s -> 3))
-         .setCoder(KvCoder.of(VarIntCoder.of(), StringUtf8Coder.of()));
-      return keyedInput.apply(ParDo.of(new CountingDoFn()));
+      MainRunner.cmdLine(args, new Nl.Transform());
    }
 }

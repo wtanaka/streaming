@@ -85,6 +85,8 @@ dependencies {
 
 
 
+    compile 'org.apache.beam:beam-runners-direct-java:0.6.0'
+    compile 'org.slf4j:slf4j-log4j12:1.7.14'
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.apache.beam:beam-runners-direct-java:0.6.0'

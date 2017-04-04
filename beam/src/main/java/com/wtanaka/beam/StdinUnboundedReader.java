@@ -31,18 +31,18 @@ import org.joda.time.Instant;
 /**
  * Source.Reader implementation for Stdin
  */
-class StdinReader extends UnboundedSource.UnboundedReader<byte[]>
+class StdinUnboundedReader extends UnboundedSource.UnboundedReader<byte[]>
 {
    final private UnboundedSource<byte[], ?> m_source;
    private final InputStream m_stream;
    private ByteArrayOutputStream m_buffer = new ByteArrayOutputStream();
 
-   StdinReader(final UnboundedSource<byte[], ?> source)
+   StdinUnboundedReader(final UnboundedSource<byte[], ?> source)
    {
       this(source, null);
    }
 
-   StdinReader(final UnboundedSource<byte[], ?> source, InputStream stream)
+   StdinUnboundedReader(final UnboundedSource<byte[], ?> source, InputStream stream)
    {
       m_source = source;
       m_stream = stream;

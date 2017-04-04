@@ -28,16 +28,16 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test StdinSource
+ * Test StdinUnboundedSource
  */
-public class StdinSourceTest
+public class StdinUnboundedSourceTest
 {
-   private StdinSource m_source;
+   private StdinUnboundedSource m_source;
 
    @Before
    public void setUp() throws Exception
    {
-      m_source = new StdinSource();
+      m_source = new StdinUnboundedSource();
    }
 
    @Test

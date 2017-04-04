@@ -40,7 +40,7 @@ public class CatTest
    {
       final PCollection<String> output =
          m_pipeline.apply(Create.empty(StringUtf8Coder.of()))
-            .apply(new Cat());
+            .apply(new Cat.Transform());
       PAssert.that(output).empty();
       m_pipeline.run();
    }
@@ -50,8 +50,18 @@ public class CatTest
    {
       final Create.Values<String> values = Create.of("A");
       final PCollection<String> source = m_pipeline.apply(values);
-      final PCollection<String> output = source.apply(new Cat());
+      final PCollection<String> output = source.apply(new Cat.Transform());
       PAssert.that(output).containsInAnyOrder("A");
+      m_pipeline.run();
+   }
+
+   @Test
+   public void testMultiple()
+   {
+      final Create.Values<String> values = Create.of("A", "B", "C");
+      final PCollection<String> source = m_pipeline.apply(values);
+      final PCollection<String> output = source.apply(new Cat.Transform());
+      PAssert.that(output).containsInAnyOrder("A", "B", "C");
       m_pipeline.run();
    }
 }

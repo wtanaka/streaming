@@ -19,31 +19,32 @@
  */
 package com.wtanaka.beam;
 
-import org.apache.beam.sdk.transforms.PTransform;
-import org.apache.beam.sdk.values.PCollection;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
 
 /**
- * Implementation of cat
- * <p>
- * {echo hello; echo world} | java -cp beam/build/libs/beam-all.jar
- * com.wtanaka.beam.Cat
+ * Serializable ByteArrayInputStream
  */
-public class Cat
+public class SerializableByteArrayInputStream extends InputStream implements
+   Serializable
 {
-   public static class Transform
-      extends PTransform<PCollection<String>, PCollection<String>>
-   {
-      private static final long serialVersionUID = 1L;
+   private static final long serialVersionUID = 1L;
+   private byte[] m_bytes;
+   private int m_index = 0;
 
-      @Override
-      public PCollection<String> expand(final PCollection<String> input)
-      {
-         return input;
-      }
+   public SerializableByteArrayInputStream(byte[] input)
+   {
+      m_bytes = input;
    }
 
-   public static void main(String[] args)
+   @Override
+   public int read() throws IOException
    {
-      MainRunner.cmdLine(args, new Transform());
+      if (m_index >= m_bytes.length)
+      {
+         return -1;
+      }
+      return m_bytes[m_index++];
    }
 }
