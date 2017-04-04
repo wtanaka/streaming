@@ -9,6 +9,9 @@ before_install:
 - sudo apt-get install -y ansible
 script:
 - make test
+deploy:
+- provider: script
+  script: ./gradlew :beam:bintrayUpload
 after_failure:
 - "(cat .kitchen/logs/*.log | grep -v '^I, ')"
 env:

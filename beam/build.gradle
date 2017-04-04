@@ -1,11 +1,15 @@
 plugins {
     id "com.jfrog.bintray" version "1.7.3"
     id "com.github.johnrengelman.shadow" version "1.2.4"
+    id 'com.palantir.git-version' version '0.7.0'
 }
 apply plugin: 'java'
 apply plugin: 'jacoco'
 apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'maven-publish'
+
+version gitVersion()
+// def versionDetails = versionDetails()
 
 jacocoTestCoverageVerification {
    violationRules {
@@ -18,22 +22,23 @@ jacocoTestCoverageVerification {
 }
 
 bintray {
-    user = System.getenv('BINTRAY_USER')
-    key = System.getenv('BINTRAY_KEY')
-    publications = ['MyPublication']
-    pkg {
-        repo = 'maven'
-        name = 'beam'
-        userOrg = System.getenv('BINTRAY_USER')
-        licenses = ["GPL-3.0"]
-        vcsUrl = 'https://github.com/wtanaka/streaming.git'
-        version {
-            name = '0.0.0'
-            desc = 'Apache Beam Utility Code'
-            released = new Date()
-            vcsTag = '0.0.0'
-        }
-    }
+   user = System.getenv('BINTRAY_USER')
+   key = System.getenv('BINTRAY_KEY')
+   publications = ['MyPublication']
+   pkg {
+      repo = 'maven'
+      name = 'beam'
+      userOrg = System.getenv('BINTRAY_USER')
+      licenses = ["GPL-3.0"]
+      issueTrackerUrl = 'https://github.com/wtanaka/streaming/issues'
+      vcsUrl = 'https://github.com/wtanaka/streaming.git'
+      websiteUrl = 'https://wtanaka.com/beam'
+      version {
+         name = project.version
+         desc = 'Apache Beam Utility Code'
+         released = new Date()
+      }
+   }
 }
 
 //task sourceJar(type: Jar) {
@@ -54,7 +59,7 @@ publishing {
             // artifact javadocJar
             groupId 'com.wtanaka'
             artifactId 'beam'
-            version '0.0.0'
+            version project.version
         }
     }
 }
