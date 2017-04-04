@@ -1,18 +1,17 @@
 language: ruby
 rvm:
-  - 1.9.3
-
+- 1.9.3
 sudo: required
-
 services:
-  - docker
-
+- docker
 before_install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -y ansible
-
+- sudo apt-get update -qq
+- sudo apt-get install -y ansible
 script:
-  - make test
-
+- make test
 after_failure:
-  - (cat .kitchen/logs/*.log | grep -v '^I, ')
+- "(cat .kitchen/logs/*.log | grep -v '^I, ')"
+env:
+  global:
+  - secure: VMVA73SaIs7kTbA/VMFDp8Gr7kH6KXUJD6OTobHVD1sUA5JHcxd29Knp1JeeUUZJJ69SmpSxtZm9tgNCFC9zmAby5Wn6n+YdyWOHoNxSw9JJ4nMLe26Aw9HZSs2eNJMW4JOxc5iOCERVQ1yXbwC58d8X8/8tlQsNBLfmbaMwtMU8b1HXoErGcEs98wqgWq+/t6BKpi773JDSszAvH70TgymTwhrwxiIxLu2SO/+qC7285dg/JMSJilcsLrPSTcPjVH4a0VoJg9+AxAr0SpUBU83ilFIUE0T0P3Y++c0ABzgU56+BTOtyX0Qxf4XDsmVfGQQv3PDL7kJsgl7scveASCK6v6S5KEFjSUtNlTlMJK1kbwBwQ708NJZ+MSEYDhbpMhb7JDZseVXmbVCeFQkkaFLo3G1YMU2Z/OD7AMt3h5XSEr2FFe9oH/YkFxN5K+tPXVXkPGxVTCODpJ4JcwpEChtNqVIPs8X73l1chUTeK3EdRtwL5xZyg+X7R9apqy8kqwKN8PM82hgJt8FEYlDhw0+QxzVtCkFRjN0C16tFihcV1dK5TuSccER52VCu2qKm5z6xKhgGB4BZsNqCxutUf+hYGMSHbhPI6qm/16bHZWb4JFFBCEgUsf4zo/UadgLWezKZkeH+lprAiQAvItmYP4hCwn+XOkwo2PIZKbCnPp0=
+  - secure: AFFtyJCPv/F0Va0KB0C9kuyqmsV0PSO8ISo9qG1Tv1TlzNMTnk1Ux+Fxr7b0s6E2LBuoIAy3yLBvvYagOFPn7bInn9XP+oWHehMsUhL/qXV2DX2/EUPKf78DwdSyP6K4yn9TnOcS2cmM9bMRUoYcqf8pMg6NyFQ38sdlE8K674NMRJrnwxJxgyz006gHiDohQxSwo4pozjgpAhxdM33cxLLQS/SEjQcTD17c4ZYhwsTXHcCOtKLBEiySGqxpRMtgsoNGlmhMehxXB2ROKi6ztEQz3PEsdNtbHo1ps2MY1WDXbeyc2qdtZpgW50EjFmIy2059Qv09iFzMVZdPEg85tzT/I4kipjQY9DYH78kdyXVcp9bkFzge2wuWOOTk6Qtx66JrxwQAlAW1UqLTDPMdHEOwS83LbHpYU6KstQxyKtQQ0K5BnWHNACDlDiQk1eqFkWzA4lleWN5OQaG1C5Jj1eLlwa8zqHeh6xjJX1NhOZJnLiPSLCSC1sx2FvVR6FnoIpD0uuwZxQVclkNDVDB4EoguiKwmvMr4/GljW7F3KadS7SI/jg9chianiZgDFIrF8NjZdxL9M+ISJ/VeSb+5nO5nS4rABa+jmeV7mED/WghhxHAcbEDte+vIKCqtl495x9nLdvAY8Lm59t0XtrRhjrSb+C2QaSDXKtp1c+GO90w=
