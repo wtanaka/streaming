@@ -40,6 +40,10 @@ bintray {
       version {
          name = project.version
          released = new Date()
+         gpg {
+           sign = true
+           // passphrase = ''
+         }
       }
    }
 }
