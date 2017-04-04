@@ -48,22 +48,27 @@ bintray {
    }
 }
 
-//task sourceJar(type: Jar) {
-//    from sourceSets.main.allJava
-//    classifier "sources"
-//}
-//
-//task javadocJar(type: Jar, dependsOn: javadoc) {
-//    from javadoc.destinationDir
-//    classifier = 'javadoc'
-//}
+task sourceJar(type: Jar) {
+   from sourceSets.main.allJava
+   classifier "sources"
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+   from javadoc.destinationDir
+   classifier = 'javadoc'
+}
+
+artifacts {
+   archives sourceJar
+   archives javadocJar
+}
 
 publishing {
     publications {
         MyPublication(MavenPublication) {
             from components.java
-            // artifact sourceJar
-            // artifact javadocJar
+            artifact sourceJar
+            artifact javadocJar
             groupId 'com.wtanaka'
             artifactId 'beam'
             version project.version
