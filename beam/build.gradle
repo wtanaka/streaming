@@ -4,6 +4,7 @@ plugins {
     id 'com.palantir.git-version' version '0.7.0'
 }
 apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'jacoco'
 apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'maven-publish'
@@ -63,6 +64,23 @@ artifacts {
    archives javadocJar
 }
 
+def pomConfig = {
+	 licenses {
+		  license {
+				name "GNU General Public License, Version 3.0"
+				url "http://www.gnu.org/licenses/gpl-3.0.html"
+				distribution "repo"
+		  }
+	 }
+    developers {
+        developer {
+            id "wtanaka"
+            name "wtanaka.com"
+            email "wtanaka@yahoo.com"
+        }
+    }
+}
+
 publishing {
     publications {
         MyPublication(MavenPublication) {
@@ -72,6 +90,13 @@ publishing {
             groupId 'com.wtanaka'
             artifactId 'beam'
             version project.version
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('description', 'Apache Beam Utility Code')
+                root.appendNode('name', 'com.wtanaka.beam')
+                root.appendNode('url', 'https://wtanaka.com/beam')
+                root.children().last() + pomConfig
+            }
         }
     }
 }
