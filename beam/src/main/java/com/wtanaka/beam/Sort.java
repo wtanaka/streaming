@@ -19,6 +19,10 @@
  */
 package com.wtanaka.beam;
 
+import org.apache.beam.sdk.coders.IterableCoder;
+import org.apache.beam.sdk.coders.KvCoder;
+import org.apache.beam.sdk.coders.StringUtf8Coder;
+import org.apache.beam.sdk.coders.VarIntCoder;
 import org.apache.beam.sdk.extensions.sorter.BufferedExternalSorter;
 import org.apache.beam.sdk.extensions.sorter.SortValues;
 import org.apache.beam.sdk.transforms.Flatten;
@@ -53,9 +57,11 @@ public class Sort extends PTransform<PCollection<String>, PCollection<String>>
          };
       PCollection<KV<String, String>> with2ndKey =
          input.apply("Pair with key", WithKeys.of(fn));
-      final SerializableFunction<KV<String, String>, Integer> applyZero =
+      final SerializableFunction<KV<String, String>, Integer> addZero =
          new SerializableFunction<KV<String, String>, Integer>()
          {
+            private static final long serialVersionUID = 1L;
+
             @Override
             public Integer apply(final KV<String, String> input)
             {
@@ -63,13 +69,14 @@ public class Sort extends PTransform<PCollection<String>, PCollection<String>>
             }
          };
       PCollection<KV<Integer, KV<String, String>>> with1stKey =
-         with2ndKey.apply("Add partition key", WithKeys.of(applyZero));
+         with2ndKey.apply("Add partition key", WithKeys.of(addZero));
       final PCollection<KV<Integer, Iterable<KV<String, String>>>> grouped =
-         with1stKey.apply("Group by partition key",
-            GroupByKey.<Integer, KV<String, String>>create());
+         with1stKey.apply("Group by partition key", GroupByKey.create())
+            .setCoder(KvCoder.of(VarIntCoder.of(), IterableCoder
+               .of(KvCoder.of(StringUtf8Coder.of(), StringUtf8Coder.of()))));
       // This is not distributed
       PCollection<KV<Integer, Iterable<KV<String, String>>>> sorted =
-         grouped.apply("Sort", SortValues.<Integer, String, String>create(
+         grouped.apply("Sort", SortValues.create(
             BufferedExternalSorter.options()));
       PCollection<Iterable<KV<String, String>>> secondaryKeys = sorted.apply(
          "Remove partition key", Values.create());

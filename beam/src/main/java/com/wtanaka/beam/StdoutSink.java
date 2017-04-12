@@ -62,7 +62,7 @@ class StdoutSink extends Sink<byte[]>
 
    static class StdoutWriter extends Writer<byte[], Void>
    {
-      private WriteOperation<byte[], Void> m_writeOperation;
+      private final WriteOperation<byte[], Void> m_writeOperation;
       private final OutputStream m_outputStream;
 
       StdoutWriter(

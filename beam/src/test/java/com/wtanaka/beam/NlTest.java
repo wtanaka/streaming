@@ -21,27 +21,16 @@ package com.wtanaka.beam;
 
 import java.io.Serializable;
 
-import org.apache.beam.sdk.coders.KvCoder;
 import org.apache.beam.sdk.coders.StringUtf8Coder;
-import org.apache.beam.sdk.coders.VarIntCoder;
 import org.apache.beam.sdk.testing.PAssert;
 import org.apache.beam.sdk.testing.TestPipeline;
 import org.apache.beam.sdk.transforms.Create;
-import org.apache.beam.sdk.transforms.DoFn;
-import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.transforms.Regex;
-import org.apache.beam.sdk.transforms.WithKeys;
-import org.apache.beam.sdk.util.state.StateSpec;
-import org.apache.beam.sdk.util.state.StateSpecs;
-import org.apache.beam.sdk.util.state.ValueState;
-import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import com.google.common.base.MoreObjects;
 
 /**
  * Test Nl Class
@@ -52,6 +41,7 @@ import com.google.common.base.MoreObjects;
 @RunWith(JUnit4.class)
 public class NlTest implements Serializable
 {
+   private static final long serialVersionUID = 1L;
    @Rule
    public final transient TestPipeline m_pipeline = TestPipeline.create();
 

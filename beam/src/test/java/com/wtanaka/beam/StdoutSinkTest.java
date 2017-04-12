@@ -84,7 +84,7 @@ public class StdoutSinkTest
    public void testWriterOpen() throws IOException
    {
       final StdoutSink.StdoutWriter writer = createWriter();
-      writer.open("adsf");
+      writer.open("someUniqueId1234");
    }
 
    @Test

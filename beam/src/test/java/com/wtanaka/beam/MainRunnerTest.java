@@ -33,9 +33,11 @@ import org.junit.Test;
  */
 public class MainRunnerTest
 {
-   public static class PassthruTransform extends
+   private static class PassThroughTransform extends
       PTransform<PCollection<String>, PCollection<String>>
    {
+      private static final long serialVersionUID = 1L;
+
       @Override
       public PCollection<String> expand(final PCollection<String> input)
       {
@@ -55,7 +57,7 @@ public class MainRunnerTest
          assert 0 == SerializableByteArrayOutputStream.toByteArray().length;
          MainRunner.cmdLine(Read.from(new StdinBoundedSource(in)),
             Write.to(new StdoutSink(out)),
-            new String[]{}, new PassthruTransform());
+            new String[]{}, new PassThroughTransform());
          final byte[] result =
             SerializableByteArrayOutputStream.toByteArray();
          Assert.assertEquals(bytes.length, result.length);

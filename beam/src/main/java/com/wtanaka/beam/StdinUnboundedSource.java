@@ -50,7 +50,7 @@ class StdinUnboundedSource extends UnboundedSource<byte[],
    {
       final private UnboundedSource<byte[], ?> m_source;
       private final InputStream m_stream;
-      private ByteArrayOutputStream m_buffer = new ByteArrayOutputStream();
+      private final ByteArrayOutputStream m_buffer = new ByteArrayOutputStream();
 
       StdinUnboundedReader(final UnboundedSource<byte[], ?> source)
       {

@@ -19,8 +19,6 @@
  */
 package com.wtanaka.beam;
 
-import java.util.logging.Level;
-
 import org.apache.beam.runners.direct.DirectRunner;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.io.Read;
@@ -38,6 +36,7 @@ import org.apache.beam.sdk.values.PDone;
  * Utility code to run beam pipelines on the command line, processing stdin
  * into stdout
  */
+@SuppressWarnings("WeakerAccess")
 public class MainRunner
 {
    static void cmdLine(String[] args, PTransform<PCollection<String>,

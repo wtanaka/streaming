@@ -20,6 +20,7 @@
 package com.wtanaka.beam;
 
 import org.apache.beam.sdk.io.CountingInput;
+import org.apache.beam.sdk.testing.PAssert;
 import org.apache.beam.sdk.testing.TestPipeline;
 import org.apache.beam.sdk.transforms.PTransform;
 import org.apache.beam.sdk.values.PCollection;
@@ -45,9 +46,9 @@ public class StringValueOfTest
       final PTransform<PCollection<Long>, PCollection<String>> transform =
          new StringValueOf<>();
       final PCollection<String> strings = source.apply(transform);
+      PAssert.that(strings).containsInAnyOrder("1", "2", "3", "4", "5",
+         "6", "7", "8", "9", "0");
       m_pipeline.run().waitUntilFinish();
-//      PAssert.that(strings).containsInAnyOrder("1", "2", "3", "4", "5",
-//         "6", "7", "8", "9", "0");
    }
 
 }

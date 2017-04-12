@@ -30,7 +30,7 @@ public class SerializableByteArrayInputStream extends InputStream implements
    Serializable
 {
    private static final long serialVersionUID = 1L;
-   private byte[] m_bytes;
+   private final byte[] m_bytes;
    private int m_index = 0;
 
    public SerializableByteArrayInputStream(byte[] input)

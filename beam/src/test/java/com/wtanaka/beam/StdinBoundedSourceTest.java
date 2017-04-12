@@ -44,12 +44,6 @@ public class StdinBoundedSourceTest
          .createReader(m_options);
    }
 
-   private StdinBoundedSource.StdinBoundedReader createStdinReader()
-   {
-      return (StdinBoundedSource.StdinBoundedReader) m_stdinSource
-         .createReader(m_options);
-   }
-
    @Test
    public void getDefaultOutputCoder()
    {
@@ -83,7 +77,8 @@ public class StdinBoundedSourceTest
    @Test
    public void testCreateReader()
    {
-      createStdinReader();
+      m_stdinSource
+         .createReader(m_options);
    }
 
    @Test

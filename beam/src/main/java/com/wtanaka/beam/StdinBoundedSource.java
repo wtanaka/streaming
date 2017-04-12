@@ -90,8 +90,8 @@ class StdinBoundedSource extends BoundedSource<byte[]>
    static class StdinBoundedReader extends BoundedSource.BoundedReader<byte[]>
    {
       private final InputStream m_stream;
-      private BoundedSource<byte[]> m_source;
-      private ByteArrayOutputStream m_buffer = new ByteArrayOutputStream();
+      private final BoundedSource<byte[]> m_source;
+      private final ByteArrayOutputStream m_buffer = new ByteArrayOutputStream();
 
       private StdinBoundedReader(final BoundedSource<byte[]> source,
                                  InputStream stream)

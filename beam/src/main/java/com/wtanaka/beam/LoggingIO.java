@@ -53,7 +53,7 @@ public class LoggingIO
       public PDone expand(final PCollection<String> input)
       {
          final PCollection<Void> result = input.apply(ParDo.of(m_doFn));
-         return PDone.in(input.getPipeline());
+         return PDone.in(result.getPipeline());
       }
 
       public static class LogDoFn extends DoFn<String, Void>
