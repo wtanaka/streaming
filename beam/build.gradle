@@ -79,6 +79,11 @@ def pomConfig = {
             email "wtanaka@yahoo.com"
         }
     }
+    scm {
+        connection "scm:git:git://github.com/wtanaka/streaming.git"
+        developerConnection "scm:git:ssh://github.com:wtanaka/streaming.git"
+        url "https://github.com/wtanaka/streaming/tree/master"
+    }
 }
 
 publishing {
