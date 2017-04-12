@@ -71,8 +71,7 @@ public class MainRunner
             @Override
             public String apply(final byte[] input)
             {
-               final String s = new String(input);
-               return s;
+               return new String(input);
             }
          }));
       final PCollection<String> output = strStdin.apply(transform);

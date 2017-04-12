@@ -75,8 +75,6 @@ public class Sort extends PTransform<PCollection<String>, PCollection<String>>
          "Remove partition key", Values.create());
       PCollection<KV<String, String>> flattened = secondaryKeys.apply(
          "Flatten iterable", Flatten.iterables());
-      PCollection<String> result = flattened.apply("Pull out values",
-         Values.create());
-      return result;
+      return flattened.apply("Pull out values", Values.create());
    }
 }

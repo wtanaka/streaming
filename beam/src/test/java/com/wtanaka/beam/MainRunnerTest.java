@@ -19,14 +19,10 @@
  */
 package com.wtanaka.beam;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 
 import org.apache.beam.sdk.io.Read;
 import org.apache.beam.sdk.io.Write;
-import org.apache.beam.sdk.testing.PAssert;
 import org.apache.beam.sdk.transforms.PTransform;
 import org.apache.beam.sdk.values.PCollection;
 import org.junit.Assert;
@@ -56,15 +52,17 @@ public class MainRunnerTest
       {
          SerializableByteArrayOutputStream out =
             new SerializableByteArrayOutputStream();
-         assert 0 == out.toByteArray().length;
+         assert 0 == SerializableByteArrayOutputStream.toByteArray().length;
          MainRunner.cmdLine(Read.from(new StdinBoundedSource(in)),
             Write.to(new StdoutSink(out)),
             new String[]{}, new PassthruTransform());
-         final byte[] result = out.toByteArray();
+         final byte[] result =
+            SerializableByteArrayOutputStream.toByteArray();
          Assert.assertEquals(bytes.length, result.length);
       }
       finally
       {
+         // Clean up the global variable
          SerializableByteArrayOutputStream.reset();
       }
    }

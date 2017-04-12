@@ -27,7 +27,10 @@ import java.util.ArrayList;
 import org.apache.commons.lang3.ArrayUtils;
 
 /**
- * Serializable ByteArrayInputStream
+ * <p>Serializable ByteArrayInputStream
+ * <p>We use a static a.k.a. global variable here to get around the fact that
+ * Beam will serialize instance fields in sinks.  Of course, this means that
+ * this class is only usable in a single VM, e.g. using DirectRunner
  */
 class SerializableByteArrayOutputStream extends OutputStream implements
    Serializable
