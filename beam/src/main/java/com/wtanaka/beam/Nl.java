@@ -34,7 +34,10 @@ import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 
 /**
- * Implementation of an "approximate" version of nl
+ * <p>Implementation of an "approximate" version of nl
+ *
+ * yes | head -50 | java -cp beam/build/libs/beam-all.jar
+ * com.wtanaka.beam.Nl
  */
 public class Nl
 {
