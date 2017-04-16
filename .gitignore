@@ -9,4 +9,5 @@
 /.kitchen
 /local.properties
 /roles
+/sec.gpg
 /vendor

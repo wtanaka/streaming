@@ -1,16 +1,31 @@
 plugins {
+    // Upload new packages to bintray
     id "com.jfrog.bintray" version "1.7.3"
+    // Build shadow jar for flink
     id "com.github.johnrengelman.shadow" version "1.2.4"
+    // Pull current git version into gradle variable
     id 'com.palantir.git-version' version '0.7.0'
 }
 apply plugin: 'java'
 apply plugin: 'java-library'
+// Code coverage
 apply plugin: 'jacoco'
 apply plugin: 'com.github.johnrengelman.shadow'
+// Needed for bintray
 apply plugin: 'maven-publish'
+// Upload to Sonatype for Maven Central
+apply plugin: 'maven'
+// Signing required for Sonatype Maven Central Direct Upload
+apply plugin: 'signing'
 
 version gitVersion()
+version = gitVersion()
+group = 'com.wtanaka'
 // def versionDetails = versionDetails()
+
+project.ext["signing.keyId"] = '74B2DD02'
+project.ext["signing.password"] = System.getenv("GPG_PASSPHRASE") ?: ""
+project.ext["signing.secretKeyRingFile"] = file("../sec.gpg").absolutePath
 
 jacocoTestCoverageVerification {
    violationRules {
@@ -64,6 +79,10 @@ artifacts {
    archives javadocJar
 }
 
+signing {
+   sign configurations.archives
+}
+
 def pomConfig = {
 	 licenses {
 		  license {
@@ -86,6 +105,7 @@ def pomConfig = {
     }
 }
 
+// Used for bintray
 publishing {
     publications {
         MyPublication(MavenPublication) {
@@ -104,6 +124,58 @@ publishing {
             }
         }
     }
+}
+
+uploadArchives {
+   repositories {
+      mavenDeployer {
+         beforeDeployment {
+            MavenDeployment deployment -> signing.signPom(deployment)
+         }
+
+         repository(url:
+            "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+            authentication(userName: System.getenv('OSSRH_USER'),
+                  password: System.getenv('OSSRH_PASSWORD'))
+         }
+
+         snapshotRepository(url:
+            "https://oss.sonatype.org/content/repositories/snapshots/") {
+            authentication(userName: System.getenv('OSSRH_USER'),
+                  password: System.getenv('OSSRH_PASSWORD'))
+         }
+
+         pom.project {
+            name 'com.wtanaka.beam'
+            packaging 'jar'
+            artifactId 'beam'
+            description 'Apache Beam Utility Code'
+            url 'https://wtanaka.com/beam'
+
+            scm {
+               connection "scm:git:git://github.com/wtanaka/streaming.git"
+               developerConnection "scm:git:ssh://github.com:wtanaka/streaming.git"
+               url "https://github.com/wtanaka/streaming/tree/master"
+            }
+
+            licenses {
+               license {
+                  name "GNU General Public License, Version 3.0"
+                  url "http://www.gnu.org/licenses/gpl-3.0.html"
+                  distribution "repo"
+               }
+            }
+
+            developers {
+               developer {
+                  id "wtanaka"
+                  name "wtanaka.com"
+                  email "wtanaka@yahoo.com"
+               }
+            }
+         }
+      }
+   }
 }
 
 dependencies {
