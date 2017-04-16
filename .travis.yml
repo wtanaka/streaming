@@ -13,7 +13,7 @@ script:
 - make test
 deploy:
 - provider: script
-  script: git fetch --unshallow; ./gradlew :beam:bintrayUpload :beam:uploadArchives
+  script: git fetch --unshallow; ./gradlew :beam:bintrayUpload :beam:uploadArchives :beam:closeAndReleaseRepository
   skip_cleanup: true
 after_failure:
 - "(cat .kitchen/logs/*.log | grep -v '^I, ')"
