@@ -36,6 +36,9 @@ import org.apache.beam.sdk.values.PCollection;
 
 /**
  * Implementation of sort
+ *
+ * yes | head -50 | nl | java -cp beam/build/libs/beam-all.jar
+ * com.wtanaka.beam.Sort
  */
 public class Sort extends PTransform<PCollection<String>, PCollection<String>>
 {
