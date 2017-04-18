@@ -28,63 +28,50 @@ import org.apache.beam.sdk.extensions.sorter.SortValues;
 import org.apache.beam.sdk.transforms.Flatten;
 import org.apache.beam.sdk.transforms.GroupByKey;
 import org.apache.beam.sdk.transforms.PTransform;
-import org.apache.beam.sdk.transforms.SerializableFunction;
 import org.apache.beam.sdk.transforms.Values;
 import org.apache.beam.sdk.transforms.WithKeys;
-import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
+
+import com.wtanaka.beam.transforms.ByteArrayToString;
+import com.wtanaka.beam.transforms.StringToByteArray;
+import com.wtanaka.beam.transforms.WithKeysIdentity;
 
 /**
  * Implementation of sort
- *
+ * <p>
  * yes | head -50 | nl | java -cp beam/build/libs/beam-all.jar
  * com.wtanaka.beam.Sort
  */
-public class Sort extends PTransform<PCollection<String>, PCollection<String>>
+public class Sort
 {
-   private static final long serialVersionUID = 1L;
-
-   @Override
-   public PCollection<String> expand(final PCollection<String> input)
+   public static class Transform extends PTransform<PCollection<byte[]>,
+      PCollection<byte[]>>
    {
-      final SerializableFunction<String, String> fn =
-         new SerializableFunction<String, String>()
-         {
-            private static final long serialVersionUID = 1L;
+      private static final long serialVersionUID = 1L;
 
-            @Override
-            public String apply(final String input)
-            {
-               return input;
-            }
-         };
-      PCollection<KV<String, String>> with2ndKey =
-         input.apply("Pair with key", WithKeys.of(fn));
-      final SerializableFunction<KV<String, String>, Integer> addZero =
-         new SerializableFunction<KV<String, String>, Integer>()
-         {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public Integer apply(final KV<String, String> input)
-            {
-               return 0;
-            }
-         };
-      PCollection<KV<Integer, KV<String, String>>> with1stKey =
-         with2ndKey.apply("Add partition key", WithKeys.of(addZero));
-      final PCollection<KV<Integer, Iterable<KV<String, String>>>> grouped =
-         with1stKey.apply("Group by partition key", GroupByKey.create())
+      @Override
+      public PCollection<byte[]> expand(final PCollection<byte[]> input)
+      {
+         return input
+            .apply(ByteArrayToString.of("UTF-8"))
+            .apply("Pair with key", WithKeysIdentity.of())
+            .apply("Add partition key", WithKeys.of(0))
+            .apply("Group by partition key", GroupByKey.create())
             .setCoder(KvCoder.of(VarIntCoder.of(), IterableCoder
-               .of(KvCoder.of(StringUtf8Coder.of(), StringUtf8Coder.of()))));
-      // This is not distributed
-      PCollection<KV<Integer, Iterable<KV<String, String>>>> sorted =
-         grouped.apply("Sort", SortValues.create(
-            BufferedExternalSorter.options()));
-      PCollection<Iterable<KV<String, String>>> secondaryKeys = sorted.apply(
-         "Remove partition key", Values.create());
-      PCollection<KV<String, String>> flattened = secondaryKeys.apply(
-         "Flatten iterable", Flatten.iterables());
-      return flattened.apply("Pull out values", Values.create());
+               .of(KvCoder
+                  .of(StringUtf8Coder.of(), StringUtf8Coder.of()))))
+            // This is not parallelizable
+            .apply("Sort",
+               SortValues.create(BufferedExternalSorter.options()))
+            .apply("Remove partition key", Values.create())
+            .apply("Flatten iterable", Flatten.iterables())
+            .apply("Pull out values", Values.create())
+            .apply(StringToByteArray.of("UTF-8"));
+      }
+   }
+
+   public static void main(String[] args)
+   {
+      MainRunner.cmdLine(args, new Transform());
    }
 }
