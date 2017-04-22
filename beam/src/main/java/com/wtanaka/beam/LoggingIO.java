@@ -44,7 +44,7 @@ public class LoggingIO
       private static final long serialVersionUID = 7349020373029956433L;
       private final DoFn<String, Void> m_doFn;
 
-      public Write(String logger, Level level)
+      Write(String logger, Level level)
       {
          m_doFn = new LogDoFn(logger, level);
       }
@@ -56,13 +56,13 @@ public class LoggingIO
          return PDone.in(result.getPipeline());
       }
 
-      public static class LogDoFn extends DoFn<String, Void>
+      static class LogDoFn extends DoFn<String, Void>
       {
          private static final long serialVersionUID = -7710028799519540960L;
          private final String m_loggerString;
          private final Level m_level;
 
-         public LogDoFn(String loggerString, Level level)
+         LogDoFn(String loggerString, Level level)
          {
             m_loggerString = loggerString;
             m_level = level;
