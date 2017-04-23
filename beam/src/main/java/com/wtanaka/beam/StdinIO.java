@@ -256,7 +256,9 @@ public class StdinIO
          @Override
          public CheckpointMark getCheckpointMark()
          {
-            return null;
+            return () ->
+            {
+            };
          }
 
          @Override

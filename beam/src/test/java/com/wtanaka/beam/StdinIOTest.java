@@ -85,7 +85,7 @@ public class StdinIOTest
    @Test
    public void getCheckpointMark() throws Exception
    {
-      Assert.assertNull(m_reader.getCheckpointMark());
+      Assert.assertNotNull(m_reader.getCheckpointMark());
    }
 
    @Test
