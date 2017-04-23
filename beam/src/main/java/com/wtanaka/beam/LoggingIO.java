@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.PTransform;
 import org.apache.beam.sdk.transforms.ParDo;
+import org.apache.beam.sdk.transforms.windowing.PaneInfo;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.PDone;
 
@@ -72,7 +73,10 @@ public class LoggingIO
          public void processElement(ProcessContext context)
          {
             final String element = context.element();
-            Logger.getLogger(m_loggerString).log(m_level, element);
+            Logger.getLogger(m_loggerString).log(m_level,
+               "<" + context.timestamp() + "> " + element
+                  + (context.pane() == PaneInfo.NO_FIRING ? "" :
+                  " [pane: " + context.pane() + "]"));
          }
       }
    }
