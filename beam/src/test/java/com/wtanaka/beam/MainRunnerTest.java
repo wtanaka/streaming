@@ -34,12 +34,12 @@ import org.junit.Test;
 public class MainRunnerTest
 {
    private static class PassThroughTransform extends
-      PTransform<PCollection<String>, PCollection<String>>
+      PTransform<PCollection<byte[]>, PCollection<byte[]>>
    {
       private static final long serialVersionUID = 1L;
 
       @Override
-      public PCollection<String> expand(final PCollection<String> input)
+      public PCollection<byte[]> expand(final PCollection<byte[]> input)
       {
          return input;
       }

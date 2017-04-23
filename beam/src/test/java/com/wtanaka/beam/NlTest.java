@@ -21,7 +21,7 @@ package com.wtanaka.beam;
 
 import java.io.Serializable;
 
-import org.apache.beam.sdk.coders.StringUtf8Coder;
+import org.apache.beam.sdk.coders.ByteArrayCoder;
 import org.apache.beam.sdk.testing.PAssert;
 import org.apache.beam.sdk.testing.TestPipeline;
 import org.apache.beam.sdk.transforms.Create;
@@ -48,8 +48,8 @@ public class NlTest implements Serializable
    @Test
    public void testEmpty()
    {
-      final PCollection<String> output =
-         m_pipeline.apply(Create.empty(StringUtf8Coder.of()))
+      final PCollection<byte[]> output =
+         m_pipeline.apply(Create.empty(ByteArrayCoder.of()))
             .apply(new Nl.Transform());
       PAssert.that(output).empty();
       m_pipeline.run();
@@ -58,21 +58,27 @@ public class NlTest implements Serializable
    @Test
    public void testOne()
    {
-      final PCollection<String> source = m_pipeline.apply(Create.of("A"));
-      final PCollection<String> output = source.apply(new Nl.Transform());
-      PAssert.that(output).containsInAnyOrder("1\tA");
+      final PCollection<byte[]> source = m_pipeline
+         .apply(Create.of("A".getBytes()));
+      final PCollection<byte[]> output = source.apply(new Nl.Transform());
+      final PCollection<String> stringOut = output.apply(
+         new ByteArrayToString());
+      PAssert.that(stringOut).containsInAnyOrder("1\tA");
       m_pipeline.run();
    }
 
    @Test
    public void testThree()
    {
-      final Create.Values<String> threeLetters = Create.of("A", "B", "C");
-      final PCollection<String> source = m_pipeline.apply(threeLetters);
-      final PCollection<String> output = source.apply(new Nl.Transform());
+      final Create.Values<byte[]> threeLetters = Create.of(
+         "A".getBytes(), "B".getBytes(), "C".getBytes());
+      final PCollection<byte[]> source = m_pipeline.apply(threeLetters);
+      final PCollection<byte[]> output = source.apply(new Nl.Transform());
       // Not sure what order the lines came into Nl so we'll
       // split it apart again
-      final PCollection<String> tokens = output.apply(Regex.split("\t"));
+      final PCollection<String> tokens = output
+         .apply(new ByteArrayToString())
+         .apply(Regex.split("\t"));
       PAssert.that(tokens).containsInAnyOrder("1", "A", "2", "B", "3", "C");
       m_pipeline.run();
    }

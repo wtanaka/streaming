@@ -19,8 +19,8 @@
  */
 package com.wtanaka.beam;
 
+import org.apache.beam.sdk.coders.ByteArrayCoder;
 import org.apache.beam.sdk.coders.KvCoder;
-import org.apache.beam.sdk.coders.StringUtf8Coder;
 import org.apache.beam.sdk.coders.VarIntCoder;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.PTransform;
@@ -41,13 +41,13 @@ import org.apache.beam.sdk.values.PCollection;
  */
 public class Nl
 {
-   public static class Transform extends PTransform<PCollection<String>,
-      PCollection<String>>
+   public static class Transform extends PTransform<PCollection<byte[]>,
+      PCollection<byte[]>>
    {
       private static final long serialVersionUID = 1L;
 
       public static class CountingDoFn
-         extends DoFn<KV<Integer, String>, String>
+         extends DoFn<KV<Integer, byte[]>, byte[]>
       {
          private static final long serialVersionUID = 1L;
          private static final String STATE_ID = "countState";
@@ -65,22 +65,24 @@ public class Nl
             final int approxLineNum =
                (stateVal == null ? FIRST_LINE_NUM : stateVal);
             state.write(approxLineNum + 1);
-            final String nonKeyedInput = context.element().getValue();
-            final String output = String.valueOf(approxLineNum) + "\t" +
-               nonKeyedInput;
+            final byte[] nonKeyedInput = context.element().getValue();
+            String inputValueStr = new String(nonKeyedInput);
+            final byte[] output = (String.valueOf(approxLineNum) + "\t" +
+               inputValueStr).getBytes();
             context.output(output);
          }
       }
 
       @Override
-      public PCollection<String> expand(final PCollection<String> input)
+      public PCollection<byte[]> expand(final PCollection<byte[]> input)
       {
          // Attach an arbitrary hard-coded key to each string so they share
          // the same DoFn state
-         final PCollection<KV<Integer, String>> keyedInput = input.apply(
-            WithKeys.of((SerializableFunction<String, Integer>) s -> 3))
-            .setCoder(KvCoder.of(VarIntCoder.of(), StringUtf8Coder.of()));
-         return keyedInput.apply(ParDo.of(new CountingDoFn()));
+         return input
+            .apply(
+               WithKeys.of((SerializableFunction<byte[], Integer>) s -> 3))
+            .setCoder(KvCoder.of(VarIntCoder.of(), ByteArrayCoder.of()))
+            .apply(ParDo.of(new CountingDoFn()));
       }
    }
 

@@ -25,9 +25,7 @@ import org.apache.beam.sdk.io.Read;
 import org.apache.beam.sdk.io.Write;
 import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
-import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.PTransform;
-import org.apache.beam.sdk.transforms.SimpleFunction;
 import org.apache.beam.sdk.values.PBegin;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.PDone;
@@ -39,21 +37,21 @@ import org.apache.beam.sdk.values.PDone;
 @SuppressWarnings("WeakerAccess")
 public class MainRunner
 {
-   static void cmdLine(String[] args, PTransform<PCollection<String>,
-      PCollection<String>> transform)
+   static void cmdLine(String[] args, PTransform<PCollection<byte[]>,
+      PCollection<byte[]>> transform)
    {
       MainRunner.cmdLine(Read.from(new StdinBoundedSource()),
          Write.to(new StdoutSink()), args, transform);
    }
 
    /**
-    * @param args
-    * @param transform TODO: Change to byte[], byte[] or even Byte, Byte
+    * @param args command line arguments
+    * @param transform PTransform to convert input to output
     */
    static void cmdLine(PTransform<PBegin, PCollection<byte[]>> in,
                        PTransform<PCollection<byte[]>, PDone> out,
                        final String[] args,
-                       PTransform<PCollection<String>, PCollection<String>>
+                       PTransform<PCollection<byte[]>, PCollection<byte[]>>
                           transform)
    {
       final PipelineOptions options = PipelineOptionsFactory.fromArgs(args)
@@ -61,32 +59,8 @@ public class MainRunner
       options.setRunner(DirectRunner.class);
       Pipeline p = Pipeline.create(options);
       final PCollection<byte[]> stdin = p.apply(in);
-      final PCollection<String> strStdin = stdin.apply(
-         MapElements.via(new SimpleFunction<byte[],
-            String>()
-         {
-            private static final long serialVersionUID = 7602634974725087165L;
-
-            @Override
-            public String apply(final byte[] input)
-            {
-               return new String(input);
-            }
-         }));
-      final PCollection<String> output = strStdin.apply(transform);
-      final PCollection<byte[]> byteOut = output.apply(
-         MapElements.via(new SimpleFunction<String, byte[]>()
-         {
-            private static final long serialVersionUID = 5126587914661976309L;
-
-            @Override
-            public byte[] apply(final String input)
-            {
-               return input.getBytes();
-            }
-         })
-      );
-      byteOut.apply(out);
+      final PCollection<byte[]> output = stdin.apply(transform);
+      output.apply(out);
       p.run();
    }
 }

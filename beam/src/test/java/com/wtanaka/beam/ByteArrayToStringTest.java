@@ -19,31 +19,24 @@
  */
 package com.wtanaka.beam;
 
-import org.apache.beam.sdk.transforms.PTransform;
-import org.apache.beam.sdk.values.PCollection;
+import org.apache.beam.sdk.testing.TestPipeline;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 /**
- * Implementation of cat
- * <p>
- * {echo hello; echo world} | java -cp beam/build/libs/beam-all.jar
- * com.wtanaka.beam.Cat
+ * Test ByteArrayToString
  */
-public class Cat
+@RunWith(JUnit4.class)
+public class ByteArrayToStringTest
 {
-   public static class Transform
-      extends PTransform<PCollection<byte[]>, PCollection<byte[]>>
-   {
-      private static final long serialVersionUID = 1L;
+   @Rule
+   public TestPipeline m_pipeline = TestPipeline.create();
 
-      @Override
-      public PCollection<byte[]> expand(final PCollection<byte[]> input)
-      {
-         return input;
-      }
+   @Test
+   public void testExpand() throws Exception
+   {
    }
 
-   public static void main(String[] args)
-   {
-      MainRunner.cmdLine(args, new Transform());
-   }
 }

@@ -19,7 +19,7 @@
  */
 package com.wtanaka.beam;
 
-import org.apache.beam.sdk.coders.StringUtf8Coder;
+import org.apache.beam.sdk.coders.ByteArrayCoder;
 import org.apache.beam.sdk.testing.PAssert;
 import org.apache.beam.sdk.testing.TestPipeline;
 import org.apache.beam.sdk.transforms.Create;
@@ -38,8 +38,8 @@ public class CatTest
    @Test
    public void testEmpty()
    {
-      final PCollection<String> output =
-         m_pipeline.apply(Create.empty(StringUtf8Coder.of()))
+      final PCollection<byte[]> output =
+         m_pipeline.apply(Create.empty(ByteArrayCoder.of()))
             .apply(new Cat.Transform());
       PAssert.that(output).empty();
       m_pipeline.run();
@@ -48,20 +48,25 @@ public class CatTest
    @Test
    public void testOne()
    {
-      final Create.Values<String> values = Create.of("A");
-      final PCollection<String> source = m_pipeline.apply(values);
-      final PCollection<String> output = source.apply(new Cat.Transform());
-      PAssert.that(output).containsInAnyOrder("A");
+      final Create.Values<byte[]> values = Create.of("A".getBytes());
+      final PCollection<byte[]> source = m_pipeline.apply(values);
+      final PCollection<byte[]> output = source.apply(new Cat.Transform());
+      final PCollection<String> strOut = output.apply(
+         new ByteArrayToString());
+      PAssert.that(strOut).containsInAnyOrder("A");
       m_pipeline.run();
    }
 
    @Test
    public void testMultiple()
    {
-      final Create.Values<String> values = Create.of("A", "B", "C");
-      final PCollection<String> source = m_pipeline.apply(values);
-      final PCollection<String> output = source.apply(new Cat.Transform());
-      PAssert.that(output).containsInAnyOrder("A", "B", "C");
+      final Create.Values<byte[]> values = Create.of(
+         "A".getBytes(), "B".getBytes(), "C".getBytes());
+      final PCollection<byte[]> source = m_pipeline.apply(values);
+      final PCollection<byte[]> output = source.apply(new Cat.Transform());
+      final PCollection<String> strOut = output.apply(
+         new ByteArrayToString());
+      PAssert.that(strOut).containsInAnyOrder("A", "B", "C");
       m_pipeline.run();
    }
 }

@@ -19,31 +19,25 @@
  */
 package com.wtanaka.beam;
 
+import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.PTransform;
+import org.apache.beam.sdk.transforms.SerializableFunction;
 import org.apache.beam.sdk.values.PCollection;
+import org.apache.beam.sdk.values.TypeDescriptors;
 
 /**
- * Implementation of cat
- * <p>
- * {echo hello; echo world} | java -cp beam/build/libs/beam-all.jar
- * com.wtanaka.beam.Cat
+ * PCollection that converts byte[] to String
  */
-public class Cat
+public class ByteArrayToString
+   extends PTransform<PCollection<byte[]>, PCollection<String>>
 {
-   public static class Transform
-      extends PTransform<PCollection<byte[]>, PCollection<byte[]>>
-   {
-      private static final long serialVersionUID = 1L;
+   private static final long serialVersionUID = 1L;
 
-      @Override
-      public PCollection<byte[]> expand(final PCollection<byte[]> input)
-      {
-         return input;
-      }
-   }
-
-   public static void main(String[] args)
+   @Override
+   public PCollection<String> expand(final PCollection<byte[]> input)
    {
-      MainRunner.cmdLine(args, new Transform());
+      return input.apply(MapElements.via(
+         (SerializableFunction<byte[], String>) String::new)
+         .withOutputType(TypeDescriptors.strings()));
    }
 }
