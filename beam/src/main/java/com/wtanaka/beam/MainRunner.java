@@ -40,7 +40,7 @@ public class MainRunner
    static void cmdLine(String[] args, PTransform<PCollection<byte[]>,
       PCollection<byte[]>> transform)
    {
-      MainRunner.cmdLine(Read.from(new StdinBoundedSource()),
+      MainRunner.cmdLine(Read.from(new StdinIO.BoundSource()),
          Write.to(new StdoutSink()), args, transform);
    }
 

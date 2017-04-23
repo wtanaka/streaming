@@ -24,20 +24,25 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.beam.sdk.coders.Coder;
+import org.apache.beam.sdk.io.BoundedSource;
 import org.apache.beam.sdk.io.UnboundedSource;
+import org.apache.beam.sdk.options.PipelineOptions;
+import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.transforms.windowing.BoundedWindow;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test StdinUnboundedSource
+ * Tests for StdinIO
  */
-public class StdinUnboundedSourceTest
+public class StdinIOTest
 {
-   private StdinUnboundedSource m_source;
-   private ByteArrayInputStream m_bytes;
-   private StdinUnboundedSource.StdinUnboundedReader m_reader;
+   private final PipelineOptions m_options = PipelineOptionsFactory.create();
+   private StdinIO.BoundSource m_boundSource;
+   private StdinIO.BoundSource m_boundSourceByteSource;
+   private StdinIO.UnboundSource m_unbounded;
+   private StdinIO.UnboundSource.UnboundReader m_reader;
 
    @Test
    public void advance() throws Exception
@@ -53,11 +58,18 @@ public class StdinUnboundedSourceTest
       m_reader.close();
    }
 
+   private StdinIO.BoundSource.StdinBoundedReader createBytesReader()
+   {
+      return (StdinIO.BoundSource.StdinBoundedReader)
+         m_boundSourceByteSource
+         .createReader(m_options);
+   }
+
    @Test
    public void createReader() throws Exception
    {
       final UnboundedSource.UnboundedReader<byte[]>
-         reader = m_source.createReader(null, null);
+         reader = m_unbounded.createReader(null, null);
       Assert.assertNotNull(reader);
    }
 
@@ -66,7 +78,7 @@ public class StdinUnboundedSourceTest
    {
       final List<? extends UnboundedSource<byte[], UnboundedSource
          .CheckpointMark>>
-         splits = m_source.generateInitialSplits(1, null);
+         splits = m_unbounded.generateInitialSplits(1, null);
       Assert.assertTrue(splits.size() > 0);
    }
 
@@ -80,7 +92,7 @@ public class StdinUnboundedSourceTest
    public void getCheckpointMarkCoder() throws Exception
    {
       final Coder<UnboundedSource.CheckpointMark>
-         coder = m_source.getCheckpointMarkCoder();
+         coder = m_unbounded.getCheckpointMarkCoder();
       Assert.assertNull(coder);
    }
 
@@ -112,7 +124,19 @@ public class StdinUnboundedSourceTest
    @Test
    public void getDefaultOutputCoder() throws Exception
    {
-      Assert.assertNotNull(m_source.getDefaultOutputCoder());
+      Assert.assertNotNull(m_unbounded.getDefaultOutputCoder());
+   }
+
+   @Test
+   public void getDefaultOutputCoderBounded()
+   {
+      Assert.assertNotNull(m_boundSource.getDefaultOutputCoder());
+   }
+
+   @Test
+   public void getEstimatedSizeBytes()
+   {
+      m_boundSource.getEstimatedSizeBytes(m_options);
    }
 
    @Test
@@ -123,11 +147,27 @@ public class StdinUnboundedSourceTest
    }
 
    @Before
-   public void setUp() throws Exception
+   public void setUp()
    {
-      m_source = new StdinUnboundedSource();
-      m_bytes = new ByteArrayInputStream(new byte[]{0x65, 0x0a, 0x66, 0x0a});
-      m_reader = new StdinUnboundedSource.StdinUnboundedReader(new StdinUnboundedSource(), m_bytes);
+      m_boundSource = new StdinIO.BoundSource();
+      m_boundSourceByteSource = new StdinIO.BoundSource(
+         new SerializableByteArrayInputStream(new byte[]{65, 10}));
+
+      m_unbounded = new StdinIO.UnboundSource();
+      final ByteArrayInputStream bytes = new ByteArrayInputStream(
+         new byte[]{0x65, 0x0a, 0x66, 0x0a});
+      m_reader = new StdinIO.UnboundSource.UnboundReader(
+         new StdinIO.UnboundSource(), bytes);
+   }
+
+   @Test
+   public void splitIntoBundles()
+   {
+      final List<? extends BoundedSource<byte[]>>
+         result = m_boundSource.splitIntoBundles(100,
+         m_options);
+
+      Assert.assertEquals(1, result.size());
    }
 
    @Test
@@ -139,12 +179,31 @@ public class StdinUnboundedSourceTest
    @Test
    public void testConstruct()
    {
-      new StdinUnboundedSource.StdinUnboundedReader(null);
+      new StdinIO.UnboundSource.UnboundReader(null);
+   }
+
+   @Test
+   public void testCreateReader()
+   {
+      m_boundSource
+         .createReader(m_options);
+   }
+
+   @Test
+   public void testReaderAdvance() throws IOException
+   {
+      createBytesReader().advance();
    }
 
    @Test
    public void validate() throws Exception
    {
-      m_source.validate();
+      m_unbounded.validate();
+   }
+
+   @Test
+   public void validateBounded() throws Exception
+   {
+      m_boundSource.validate();
    }
 }

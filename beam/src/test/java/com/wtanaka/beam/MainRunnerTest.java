@@ -55,7 +55,7 @@ public class MainRunnerTest
          SerializableByteArrayOutputStream out =
             new SerializableByteArrayOutputStream();
          assert 0 == SerializableByteArrayOutputStream.toByteArray().length;
-         MainRunner.cmdLine(Read.from(new StdinBoundedSource(in)),
+         MainRunner.cmdLine(Read.from(new StdinIO.BoundSource(in)),
             Write.to(new StdoutSink(out)),
             new String[]{}, new PassThroughTransform());
          final byte[] result =
