@@ -267,7 +267,7 @@ public class StreamIO
    }
 
    /**
-    * UnboundSource
+    * Unbound
     */
    static class UnboundSource<InStreamT extends InputStream & Serializable>
       extends UnboundedSource<byte[], EmptyCheckpointMark>
