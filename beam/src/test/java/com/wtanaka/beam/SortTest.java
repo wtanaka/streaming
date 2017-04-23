@@ -14,7 +14,8 @@ import org.junit.Test;
 public class SortTest
 {
    @Rule
-   public final transient TestPipeline m_pipeline = TestPipeline.create();
+   public final transient TestPipeline m_pipeline = TestPipeline.create()
+      .enableAbandonedNodeEnforcement(true);
 
    @Test
    public void expand() throws Exception

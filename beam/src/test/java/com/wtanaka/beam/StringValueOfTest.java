@@ -36,7 +36,8 @@ import org.junit.runners.JUnit4;
 public class StringValueOfTest
 {
    @Rule
-   public TestPipeline m_pipeline = TestPipeline.create();
+   public TestPipeline m_pipeline = TestPipeline.create()
+      .enableAbandonedNodeEnforcement(true);
 
    @Test
    public void testExpand() throws Exception

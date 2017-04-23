@@ -43,7 +43,8 @@ public class NlTest implements Serializable
 {
    private static final long serialVersionUID = 1L;
    @Rule
-   public final transient TestPipeline m_pipeline = TestPipeline.create();
+   public final transient TestPipeline m_pipeline = TestPipeline.create()
+      .enableAbandonedNodeEnforcement(true);
 
    @Test
    public void testEmpty()

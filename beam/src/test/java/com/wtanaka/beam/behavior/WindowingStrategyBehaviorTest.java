@@ -50,7 +50,8 @@ public class WindowingStrategyBehaviorTest
    private static final int T3 = 1492400300;
 
    @Rule
-   public final transient TestPipeline m_pipeline = TestPipeline.create();
+   public final transient TestPipeline m_pipeline = TestPipeline.create()
+      .enableAbandonedNodeEnforcement(true);
 
    private PCollection<String> makeTimestampedInput()
    {
