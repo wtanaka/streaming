@@ -19,11 +19,17 @@
  */
 package com.wtanaka.beam;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.PrintStream;
+
 import org.apache.beam.sdk.coders.ByteArrayCoder;
 import org.apache.beam.sdk.testing.PAssert;
 import org.apache.beam.sdk.testing.TestPipeline;
 import org.apache.beam.sdk.transforms.Create;
 import org.apache.beam.sdk.values.PCollection;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -33,7 +39,33 @@ import org.junit.Test;
 public class CatTest
 {
    @Rule
-   public final transient TestPipeline m_pipeline = TestPipeline.create();
+   public final transient TestPipeline m_pipeline = TestPipeline.create()
+      .enableAbandonedNodeEnforcement(true);
+
+   @Test
+   public void main() throws Exception
+   {
+      final InputStream oldIn = System.in;
+      final PrintStream oldOut = System.out;
+      try
+      {
+         final ByteArrayInputStream bais = new ByteArrayInputStream(
+            new byte[]{0x01});
+         System.setIn(bais);
+         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+         final PrintStream newOut = new PrintStream(baos);
+         System.setOut(newOut);
+
+         Cat.main(new String[]{});
+
+         Assert.assertArrayEquals(new byte[]{0x01}, baos.toByteArray());
+      }
+      finally
+      {
+         System.setIn(oldIn);
+         System.setOut(oldOut);
+      }
+   }
 
    @Test
    public void testEmpty()
@@ -42,18 +74,6 @@ public class CatTest
          m_pipeline.apply(Create.empty(ByteArrayCoder.of()))
             .apply(new Cat.Transform());
       PAssert.that(output).empty();
-      m_pipeline.run();
-   }
-
-   @Test
-   public void testOne()
-   {
-      final Create.Values<byte[]> values = Create.of("A".getBytes());
-      final PCollection<byte[]> source = m_pipeline.apply(values);
-      final PCollection<byte[]> output = source.apply(new Cat.Transform());
-      final PCollection<String> strOut = output.apply(
-         new ByteArrayToString());
-      PAssert.that(strOut).containsInAnyOrder("A");
       m_pipeline.run();
    }
 
@@ -67,6 +87,18 @@ public class CatTest
       final PCollection<String> strOut = output.apply(
          new ByteArrayToString());
       PAssert.that(strOut).containsInAnyOrder("A", "B", "C");
+      m_pipeline.run();
+   }
+
+   @Test
+   public void testOne()
+   {
+      final Create.Values<byte[]> values = Create.of("A".getBytes());
+      final PCollection<byte[]> source = m_pipeline.apply(values);
+      final PCollection<byte[]> output = source.apply(new Cat.Transform());
+      final PCollection<String> strOut = output.apply(
+         new ByteArrayToString());
+      PAssert.that(strOut).containsInAnyOrder("A");
       m_pipeline.run();
    }
 }
