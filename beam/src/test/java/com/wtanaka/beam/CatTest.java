@@ -33,6 +33,8 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 
+import com.wtanaka.beam.transforms.ByteArrayToString;
+
 /**
  * Test Cat class
  */
@@ -85,7 +87,7 @@ public class CatTest
       final PCollection<byte[]> source = m_pipeline.apply(values);
       final PCollection<byte[]> output = source.apply(new Cat.Transform());
       final PCollection<String> strOut = output.apply(
-         new ByteArrayToString());
+         ByteArrayToString.of("UTF-8"));
       PAssert.that(strOut).containsInAnyOrder("A", "B", "C");
       m_pipeline.run();
    }
@@ -97,7 +99,7 @@ public class CatTest
       final PCollection<byte[]> source = m_pipeline.apply(values);
       final PCollection<byte[]> output = source.apply(new Cat.Transform());
       final PCollection<String> strOut = output.apply(
-         new ByteArrayToString());
+         ByteArrayToString.of("UTF-8"));
       PAssert.that(strOut).containsInAnyOrder("A");
       m_pipeline.run();
    }

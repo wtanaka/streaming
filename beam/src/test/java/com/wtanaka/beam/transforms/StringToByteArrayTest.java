@@ -17,26 +17,37 @@
  * along with this program.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package com.wtanaka.beam;
+package com.wtanaka.beam.transforms;
 
+
+import org.apache.beam.sdk.testing.PAssert;
 import org.apache.beam.sdk.testing.TestPipeline;
-import org.junit.Rule;
+import org.apache.beam.sdk.transforms.Create;
+import org.apache.beam.sdk.values.PCollection;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 /**
- * Test ByteArrayToString
+ * test StringToByteArray
  */
-@RunWith(JUnit4.class)
-public class ByteArrayToStringTest
+public class StringToByteArrayTest
 {
-   @Rule
-   public TestPipeline m_pipeline = TestPipeline.create();
-
    @Test
-   public void testExpand() throws Exception
+   public void expand() throws Exception
    {
+      final TestPipeline m_pipeline = TestPipeline.create()
+         .enableAbandonedNodeEnforcement(true);
+      final PCollection<byte[]> byteArrays =
+         m_pipeline
+            .apply(Create.of("a", "b"))
+            .apply(StringToByteArray.of("UTF-8"));
+      m_pipeline.run();
+      PAssert.that(byteArrays)
+         .containsInAnyOrder("a".getBytes(), "b".getBytes());
    }
 
+   @Test
+   public void of()
+   {
+      StringToByteArray.of("UTF-8");
+   }
 }

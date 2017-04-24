@@ -32,6 +32,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import com.wtanaka.beam.transforms.ByteArrayToString;
+
 /**
  * Test Nl Class
  * <p>
@@ -63,7 +65,7 @@ public class NlTest implements Serializable
          .apply(Create.of("A".getBytes()));
       final PCollection<byte[]> output = source.apply(new Nl.Transform());
       final PCollection<String> stringOut = output.apply(
-         new ByteArrayToString());
+         ByteArrayToString.of("UTF-8"));
       PAssert.that(stringOut).containsInAnyOrder("1\tA");
       m_pipeline.run();
    }
@@ -78,7 +80,7 @@ public class NlTest implements Serializable
       // Not sure what order the lines came into Nl so we'll
       // split it apart again
       final PCollection<String> tokens = output
-         .apply(new ByteArrayToString())
+         .apply(ByteArrayToString.of("UTF-8"))
          .apply(Regex.split("\t"));
       PAssert.that(tokens).containsInAnyOrder("1", "A", "2", "B", "3", "C");
       m_pipeline.run();

@@ -17,27 +17,54 @@
  * along with this program.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package com.wtanaka.beam;
+package com.wtanaka.beam.transforms;
+
+import java.nio.charset.Charset;
 
 import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.PTransform;
-import org.apache.beam.sdk.transforms.SerializableFunction;
+import org.apache.beam.sdk.transforms.SimpleFunction;
 import org.apache.beam.sdk.values.PCollection;
-import org.apache.beam.sdk.values.TypeDescriptors;
 
 /**
- * PCollection that converts byte[] to String
+ * Convert byte array to string
  */
 public class ByteArrayToString
    extends PTransform<PCollection<byte[]>, PCollection<String>>
 {
    private static final long serialVersionUID = 1L;
+   private final MapFn m_mapFn;
+
+   private static class MapFn extends SimpleFunction<byte[], String>
+   {
+      private final String m_charset;
+
+      protected MapFn(String charset)
+      {
+         super();
+         m_charset = charset;
+      }
+
+      @Override
+      public String apply(final byte[] input)
+      {
+         return new String(input, Charset.forName(m_charset));
+      }
+   }
+
+   private ByteArrayToString(String charset)
+   {
+      m_mapFn = new MapFn(charset);
+   }
+
+   public static ByteArrayToString of(String charset)
+   {
+      return new ByteArrayToString(charset);
+   }
 
    @Override
    public PCollection<String> expand(final PCollection<byte[]> input)
    {
-      return input.apply(MapElements.via(
-         (SerializableFunction<byte[], String>) String::new)
-         .withOutputType(TypeDescriptors.strings()));
+      return input.apply(MapElements.via(m_mapFn));
    }
 }
