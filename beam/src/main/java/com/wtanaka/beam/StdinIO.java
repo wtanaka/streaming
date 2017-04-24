@@ -32,9 +32,13 @@ import javax.annotation.Nullable;
 import org.apache.beam.sdk.coders.ByteArrayCoder;
 import org.apache.beam.sdk.coders.Coder;
 import org.apache.beam.sdk.io.BoundedSource;
+import org.apache.beam.sdk.io.Read;
 import org.apache.beam.sdk.io.UnboundedSource;
 import org.apache.beam.sdk.options.PipelineOptions;
+import org.apache.beam.sdk.transforms.PTransform;
 import org.apache.beam.sdk.transforms.windowing.BoundedWindow;
+import org.apache.beam.sdk.values.PBegin;
+import org.apache.beam.sdk.values.PCollection;
 import org.joda.time.Instant;
 
 /**
@@ -78,8 +82,10 @@ public class StdinIO
 
       @Override
       public long getEstimatedSizeBytes(final PipelineOptions options)
+         throws IOException
       {
-         return 0L;
+         return m_serializableInStream != null ?
+            m_serializableInStream.available() : System.in.available();
       }
 
       @Override
@@ -167,7 +173,6 @@ public class StdinIO
             return readNext();
          }
       }
-
    }
 
    /**
@@ -212,7 +217,7 @@ public class StdinIO
       @Override
       public String toString()
       {
-         return "[UnboundSource]";
+         return "[StdinIO.UnboundSource]";
       }
 
       @Override
@@ -229,6 +234,8 @@ public class StdinIO
          private final InputStream m_stream;
          private final ByteArrayOutputStream m_buffer =
             new ByteArrayOutputStream();
+         private Instant m_timestamp = BoundedWindow.TIMESTAMP_MIN_VALUE;
+         private Instant m_watermark = BoundedWindow.TIMESTAMP_MIN_VALUE;
 
          UnboundReader(final UnboundedSource<byte[], ?> source)
          {
@@ -276,7 +283,7 @@ public class StdinIO
          @Override
          public Instant getCurrentTimestamp() throws NoSuchElementException
          {
-            return BoundedWindow.TIMESTAMP_MIN_VALUE;
+            return m_timestamp;
          }
 
          private InputStream getStream()
@@ -287,7 +294,8 @@ public class StdinIO
          @Override
          public Instant getWatermark()
          {
-            return BoundedWindow.TIMESTAMP_MIN_VALUE;
+            // return m_watermark.plus(10000L);
+            return m_watermark;
          }
 
          private boolean readNext() throws IOException
@@ -296,6 +304,7 @@ public class StdinIO
             int ch = getStream().read();
             if (ch == -1)
             {
+               m_watermark = BoundedWindow.TIMESTAMP_MAX_VALUE;
                return false;
             }
             while (ch != -1 && ch != (int) '\n')
@@ -307,6 +316,7 @@ public class StdinIO
             {
                m_buffer.write(ch);
             }
+            m_watermark = m_timestamp = Instant.now();
             return true;
          }
 
@@ -316,5 +326,11 @@ public class StdinIO
             return readNext();
          }
       }
+   }
+
+   public static PTransform<PBegin, PCollection<byte[]>> readUnbounded()
+   {
+      return Read.from(new UnboundSource());
+
    }
 }

@@ -134,7 +134,7 @@ public class StdinIOTest
    }
 
    @Test
-   public void getEstimatedSizeBytes()
+   public void getEstimatedSizeBytes() throws IOException
    {
       m_boundSource.getEstimatedSizeBytes(m_options);
    }
