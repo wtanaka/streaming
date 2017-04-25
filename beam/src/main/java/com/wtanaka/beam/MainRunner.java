@@ -54,14 +54,19 @@ public class MainRunner
                        PTransform<PCollection<byte[]>, PCollection<byte[]>>
                           transform)
    {
-      final PipelineOptions options = PipelineOptionsFactory.fromArgs(args)
-         .withValidation().create();
-      options.setRunner(DirectRunner.class);
-      Pipeline p = Pipeline.create(options);
+      Pipeline p = createPipeline(args);
       final PCollection<byte[]> stdin = p.apply(in);
       final PCollection<byte[]> output = stdin.apply(transform);
       output.apply(out);
       p.run();
+   }
+
+   private static Pipeline createPipeline(final String[] args)
+   {
+      final PipelineOptions options = PipelineOptionsFactory.fromArgs(args)
+         .withValidation().create();
+      options.setRunner(DirectRunner.class);
+      return Pipeline.create(options);
    }
 }
 
