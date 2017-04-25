@@ -40,6 +40,17 @@ jacocoTestCoverageVerification {
    }
 }
 
+jacocoTestReport {
+   reports {
+      xml.enabled true
+      csv.enabled false
+   }
+}
+
+test {
+   finalizedBy jacocoTestReport
+}
+
 bintray {
    user = System.getenv('BINTRAY_USER')
    key = System.getenv('BINTRAY_KEY')
