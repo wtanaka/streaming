@@ -24,7 +24,7 @@ import java.util.Comparator;
 
 import org.apache.beam.sdk.values.KV;
 
-interface KVComparator<K, V> extends Comparator<KV<K, V>>, Serializable
+public interface KVComparator<K, V> extends Comparator<KV<K, V>>, Serializable
 {
    long serialVersionUID = 1L;
 }
