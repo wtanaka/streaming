@@ -62,7 +62,7 @@ public class StdinIOTest
    {
       return (StdinIO.BoundSource.StdinBoundedReader)
          m_boundSourceByteSource
-         .createReader(m_options);
+            .createReader(m_options);
    }
 
    @Test
@@ -187,6 +187,18 @@ public class StdinIOTest
    {
       m_boundSource
          .createReader(m_options);
+   }
+
+   @Test
+   public void testReadBound()
+   {
+      StdinIO.readBound();
+   }
+
+   @Test
+   public void testReadUnbounded()
+   {
+      StdinIO.readUnbounded();
    }
 
    @Test

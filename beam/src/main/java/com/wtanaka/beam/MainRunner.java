@@ -37,7 +37,7 @@ import org.apache.beam.sdk.values.PDone;
 @SuppressWarnings("WeakerAccess")
 public class MainRunner
 {
-   static void cmdLine(String[] args, PTransform<PCollection<byte[]>,
+   public static void cmdLine(String[] args, PTransform<PCollection<byte[]>,
       PCollection<byte[]>> transform)
    {
       MainRunner.cmdLine(Read.from(new StdinIO.BoundSource()),
@@ -48,7 +48,7 @@ public class MainRunner
     * @param args command line arguments
     * @param transform PTransform to convert input to output
     */
-   static void cmdLine(PTransform<PBegin, PCollection<byte[]>> in,
+   public static void cmdLine(PTransform<PBegin, PCollection<byte[]>> in,
                        PTransform<PCollection<byte[]>, PDone> out,
                        final String[] args,
                        PTransform<PCollection<byte[]>, PCollection<byte[]>>

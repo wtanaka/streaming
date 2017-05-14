@@ -55,52 +55,6 @@ public class StdinIO
       private static final long serialVersionUID = 1L;
       private final InputStream m_serializableInStream;
 
-      BoundSource()
-      {
-         m_serializableInStream = null;
-      }
-
-      BoundSource(InputStream serializableInStream)
-      {
-         assert serializableInStream instanceof Serializable :
-            serializableInStream + " is not Serializable";
-         m_serializableInStream = serializableInStream;
-      }
-
-      @Override
-      public BoundedReader<byte[]> createReader(
-         final PipelineOptions options)
-      {
-         return new StdinBoundedReader(this, m_serializableInStream);
-      }
-
-      @Override
-      public Coder<byte[]> getDefaultOutputCoder()
-      {
-         return ByteArrayCoder.of();
-      }
-
-      @Override
-      public long getEstimatedSizeBytes(final PipelineOptions options)
-         throws IOException
-      {
-         return m_serializableInStream != null ?
-            m_serializableInStream.available() : System.in.available();
-      }
-
-      @Override
-      public List<? extends BoundedSource<byte[]>> splitIntoBundles(
-         final long desiredBundleSizeBytes, final PipelineOptions options)
-      {
-         return Collections.singletonList(this);
-      }
-
-      @Override
-      public void validate()
-      {
-
-      }
-
       /**
        * Source.Reader implementation for Stdin
        */
@@ -173,39 +127,24 @@ public class StdinIO
             return readNext();
          }
       }
-   }
 
-   /**
-    * UnboundSource
-    */
-   static class UnboundSource extends UnboundedSource<byte[],
-      UnboundedSource.CheckpointMark>
-   {
-      private static final long serialVersionUID = 1L;
-
-      @Override
-      public UnboundedReader<byte[]> createReader(
-         final PipelineOptions options,
-         @Nullable final CheckpointMark ignored)
-         throws IOException
+      BoundSource()
       {
-         return new UnboundReader(this);
+         m_serializableInStream = null;
+      }
+
+      BoundSource(InputStream serializableInStream)
+      {
+         assert serializableInStream instanceof Serializable :
+            serializableInStream + " is not Serializable";
+         m_serializableInStream = serializableInStream;
       }
 
       @Override
-      public List<? extends UnboundedSource<byte[], CheckpointMark>>
-      generateInitialSplits(
-         final int desiredNumSplits, final PipelineOptions options)
-         throws Exception
+      public BoundedReader<byte[]> createReader(
+         final PipelineOptions options)
       {
-         return Collections.singletonList(this);
-      }
-
-      @Nullable
-      @Override
-      public Coder<CheckpointMark> getCheckpointMarkCoder()
-      {
-         return null;
+         return new StdinBoundedReader(this, m_serializableInStream);
       }
 
       @Override
@@ -215,15 +154,34 @@ public class StdinIO
       }
 
       @Override
-      public String toString()
+      public long getEstimatedSizeBytes(final PipelineOptions options)
+         throws IOException
       {
-         return "[StdinIO.UnboundSource]";
+         return m_serializableInStream != null ?
+            m_serializableInStream.available() : System.in.available();
+      }
+
+      @Override
+      public List<? extends BoundedSource<byte[]>> splitIntoBundles(
+         final long desiredBundleSizeBytes, final PipelineOptions options)
+      {
+         return Collections.singletonList(this);
       }
 
       @Override
       public void validate()
       {
+
       }
+   }
+
+   /**
+    * UnboundSource
+    */
+   static class UnboundSource extends UnboundedSource<byte[],
+      UnboundedSource.CheckpointMark>
+   {
+      private static final long serialVersionUID = 1L;
 
       /**
        * Source.Reader implementation for Stdin
@@ -326,11 +284,57 @@ public class StdinIO
             return readNext();
          }
       }
+
+      @Override
+      public UnboundedReader<byte[]> createReader(
+         final PipelineOptions options,
+         @Nullable final CheckpointMark ignored)
+         throws IOException
+      {
+         return new UnboundReader(this);
+      }
+
+      @Override
+      public List<? extends UnboundedSource<byte[], CheckpointMark>>
+      generateInitialSplits(
+         final int desiredNumSplits, final PipelineOptions options)
+         throws Exception
+      {
+         return Collections.singletonList(this);
+      }
+
+      @Nullable
+      @Override
+      public Coder<CheckpointMark> getCheckpointMarkCoder()
+      {
+         return null;
+      }
+
+      @Override
+      public Coder<byte[]> getDefaultOutputCoder()
+      {
+         return ByteArrayCoder.of();
+      }
+
+      @Override
+      public String toString()
+      {
+         return "[StdinIO.UnboundSource]";
+      }
+
+      @Override
+      public void validate()
+      {
+      }
+   }
+
+   public static PTransform<PBegin, PCollection<byte[]>> readBound()
+   {
+      return Read.from(new BoundSource());
    }
 
    public static PTransform<PBegin, PCollection<byte[]>> readUnbounded()
    {
       return Read.from(new UnboundSource());
-
    }
 }
