@@ -44,4 +44,10 @@ public class SequentialTest
       p.run();
       PAssert.that(sum).containsInAnyOrder(6);
    }
+
+   @Test
+   public void testConstructor()
+   {
+      new Sequential();
+   }
 }

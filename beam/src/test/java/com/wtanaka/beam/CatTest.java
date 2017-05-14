@@ -70,6 +70,11 @@ public class CatTest
    }
 
    @Test
+   public void testConstructor() {
+      new Cat();
+   }
+
+   @Test
    public void testEmpty()
    {
       final PCollection<byte[]> output =
