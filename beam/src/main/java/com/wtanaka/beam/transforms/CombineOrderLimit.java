@@ -39,7 +39,6 @@ import com.wtanaka.beam.comparators.KVValueComparator;
  * <p>Groups the input collection by K, combine the values V within each
  * group using an aggregation, then finds either the largest or smallest
  * aggregated values.</p>
- * <p>
  * <p>Examples of this pattern:</p>
  * <ul>
  * <li>Given webserver logs {@code KV<IPAddress, LogEntry>},
@@ -90,10 +89,10 @@ public class CombineOrderLimit
    }
 
    /**
-    * Return a transform that groups the input collection by key, then
+    * <p>Return a transform that groups the input collection by key, then
     * combines them using the vCombineFn into some aggregate value, then
     * sorts the aggregates using the given comparator, then returns up to
-    * the first {@param limit} keys.
+    * the first {@code limit} keys.</p>
     *
     * @param vCombineFn a function that aggregates all values for a key. For
     * example, this could be Count or Sum or Max or Mean.

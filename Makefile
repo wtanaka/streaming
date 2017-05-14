@@ -6,7 +6,7 @@ converge: vendor/bundle user_network galaxy
 	$(KITCHEN) $@
 
 test: vendor/bundle user_network galaxy compile
-	./gradlew test
+	./gradlew test :beam:sourceJar :beam:javadocJar
 	$(KITCHEN) $@
 
 compile:
