@@ -22,50 +22,143 @@ package com.wtanaka.beam;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import org.apache.beam.sdk.coders.AvroCoder;
 import org.apache.beam.sdk.coders.ByteArrayCoder;
 import org.apache.beam.sdk.coders.Coder;
+import org.apache.beam.sdk.coders.StringUtf8Coder;
 import org.apache.beam.sdk.io.BoundedSource;
 import org.apache.beam.sdk.io.Read;
 import org.apache.beam.sdk.io.UnboundedSource;
 import org.apache.beam.sdk.options.PipelineOptions;
+import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.PTransform;
+import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.transforms.windowing.BoundedWindow;
 import org.apache.beam.sdk.values.PBegin;
 import org.apache.beam.sdk.values.PCollection;
+import org.apache.beam.sdk.values.PDone;
 import org.joda.time.Instant;
 
+import com.wtanaka.beam.io.EmptyCheckpointMark;
+
 /**
- * Code for incorporating System.in into Beam, primarily for experimenting
- * and learning with DirectRunner
+ * Contains bindings between InputStream and PTransform, for experimenting
+ * with DirectRunner
  */
-public class StdinIO
+public class StreamIO
 {
+   private enum HardCodedOutputStream implements Serializable
+   {
+      STDOUT, STDERR
+   }
+
+   private static final Coder<String> DEFAULT_TEXT_CODER =
+      StringUtf8Coder.of();
+
+   private static class OutStreamDoFn<OutStreamT extends OutputStream &
+      Serializable> extends DoFn<byte[], Void>
+   {
+      private final OutStreamT m_stream;
+      private final HardCodedOutputStream m_streamKey;
+
+      public OutStreamDoFn(final OutStreamT stream)
+      {
+         m_stream = stream;
+         m_streamKey = null;
+         assert (m_stream != null) ^ (m_streamKey != null);
+      }
+
+      public OutStreamDoFn(final HardCodedOutputStream streamKey)
+      {
+         m_streamKey = streamKey;
+         m_stream = null;
+         assert (m_stream != null) ^ (m_streamKey != null);
+      }
+
+      @ProcessElement
+      public void processElement(ProcessContext c) throws IOException
+      {
+         byte[] line = c.element();
+
+         OutputStream stream = m_stream;
+         // We can't store this in a map ahead of time because someone may
+         // have called System.setOut or System.setErr
+         if (stream == null)
+         {
+            switch (m_streamKey)
+            {
+               case STDOUT:
+                  stream = System.out;
+                  break;
+               case STDERR:
+                  stream = System.err;
+                  break;
+            }
+         }
+
+         assert stream != null;
+         stream.write(line);
+         stream.flush();
+      }
+   }
+
+   private static class OutTransform<OutT extends OutputStream &
+      Serializable> extends PTransform<PCollection<byte[]>, PDone>
+   {
+      private final OutT m_stream;
+      private final HardCodedOutputStream m_streamKey;
+      private final PTransform<PCollection<byte[]>, PDone> m_parDo;
+
+      public OutTransform(OutT stream)
+      {
+         m_stream = stream;
+         m_streamKey = null;
+         m_parDo = ParDo.of(new OutStreamDoFn(m_stream));
+      }
+
+      public OutTransform(HardCodedOutputStream streamKey)
+      {
+         m_stream = null;
+         m_streamKey = streamKey;
+         m_parDo = ParDo.of(new OutStreamDoFn(m_streamKey));
+      }
+
+      @Override
+      public PDone expand(final PCollection<byte[]> input)
+      {
+         input.apply(m_parDo);
+         return PDone.in(input.getPipeline());
+      }
+   }
+
    /**
     * BoundSource
     */
-   static class BoundSource<InStrT extends InputStream & Serializable> extends
+   static class BoundSource<InT extends InputStream & Serializable> extends
       BoundedSource<byte[]>
    {
       private static final long serialVersionUID = 1L;
-      private final InStrT m_serializableInStream;
+      private final InT m_serializableInStream;
 
       /**
        * Source.Reader implementation for Stdin
        */
-      static class StdinBoundedReader<InStrT extends InputStream & Serializable> extends BoundedReader<byte[]>
+      static class StdinBoundedReader<InT extends InputStream & Serializable>
+         extends BoundedReader<byte[]>
       {
-         private final InStrT m_stream;
+         private final InT m_stream;
          private final BoundedSource<byte[]> m_source;
          private final ByteArrayOutputStream m_buffer =
             new ByteArrayOutputStream();
 
          private StdinBoundedReader(final BoundedSource<byte[]> source,
-                                    InStrT stream)
+                                    InT stream)
          {
             m_source = source;
             m_stream = stream;
@@ -132,10 +225,8 @@ public class StdinIO
          m_serializableInStream = null;
       }
 
-      BoundSource(InStrT serializableInStream)
+      BoundSource(InT serializableInStream)
       {
-         assert serializableInStream instanceof Serializable :
-            serializableInStream + " is not Serializable";
          m_serializableInStream = serializableInStream;
       }
 
@@ -156,8 +247,10 @@ public class StdinIO
       public long getEstimatedSizeBytes(final PipelineOptions options)
          throws IOException
       {
-         return m_serializableInStream != null ?
+
+         final int estimate = m_serializableInStream != null ?
             m_serializableInStream.available() : System.in.available();
+         return estimate;
       }
 
       @Override
@@ -170,25 +263,27 @@ public class StdinIO
       @Override
       public void validate()
       {
-
       }
    }
 
    /**
     * UnboundSource
     */
-   static class UnboundSource extends UnboundedSource<byte[],
-      UnboundedSource.CheckpointMark>
+   static class UnboundSource<InStreamT extends InputStream & Serializable>
+      extends UnboundedSource<byte[], EmptyCheckpointMark>
    {
       private static final long serialVersionUID = 1L;
+
+      private InStreamT m_stream;
 
       /**
        * Source.Reader implementation for Stdin
        */
-      static class UnboundReader extends UnboundedReader<byte[]>
+      static class UnboundReader<InStreamT extends InputStream & Serializable>
+         extends UnboundedReader<byte[]>
       {
          final private UnboundedSource<byte[], ?> m_source;
-         private final InputStream m_stream;
+         private final InStreamT m_stream;
          private final ByteArrayOutputStream m_buffer =
             new ByteArrayOutputStream();
          private Instant m_timestamp = BoundedWindow.TIMESTAMP_MIN_VALUE;
@@ -200,7 +295,7 @@ public class StdinIO
          }
 
          UnboundReader(final UnboundedSource<byte[], ?> source,
-                       InputStream stream)
+                       InStreamT stream)
          {
             m_source = source;
             m_stream = stream;
@@ -251,6 +346,14 @@ public class StdinIO
          @Override
          public Instant getWatermark()
          {
+            try
+            {
+               throw new Exception("trace");
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
             // return m_watermark.plus(10000L);
             return m_watermark;
          }
@@ -280,23 +383,34 @@ public class StdinIO
          @Override
          public boolean start() throws IOException
          {
+
             return readNext();
          }
+      }
+
+      public UnboundSource(final InStreamT in)
+      {
+         m_stream = in;
+      }
+
+      public UnboundSource()
+      {
+         m_stream = null;
       }
 
       @Override
       public UnboundedReader<byte[]> createReader(
          final PipelineOptions options,
-         final CheckpointMark ignored)
+         final EmptyCheckpointMark ignored)
          throws IOException
       {
-         return new UnboundReader(this);
+         return new UnboundReader(this, m_stream);
       }
 
       @Override
-      public Coder<CheckpointMark> getCheckpointMarkCoder()
+      public Coder<EmptyCheckpointMark> getCheckpointMarkCoder()
       {
-         return null;
+         return AvroCoder.of(EmptyCheckpointMark.class);
       }
 
       @Override
@@ -306,7 +420,7 @@ public class StdinIO
       }
 
       @Override
-      public List<? extends UnboundedSource<byte[], CheckpointMark>>
+      public List<? extends UnboundedSource<byte[], EmptyCheckpointMark>>
       split(
          final int desiredNumSplits, final PipelineOptions options)
          throws Exception
@@ -326,13 +440,44 @@ public class StdinIO
       }
    }
 
-   public static PTransform<PBegin, PCollection<byte[]>> readBound()
+   public static PTransform<PBegin, PCollection<byte[]>> stdinBound()
    {
       return Read.from(new BoundSource());
    }
 
-   public static PTransform<PBegin, PCollection<byte[]>> readUnbounded()
+   public static PTransform<PBegin, PCollection<byte[]>> stdinUnbounded()
    {
       return Read.from(new UnboundSource());
    }
+
+   public static PTransform<PCollection<byte[]>, PDone> stderr()
+   {
+      return new OutTransform(HardCodedOutputStream.STDERR);
+   }
+
+   public static PTransform<PCollection<byte[]>, PDone> stdout()
+   {
+      return new OutTransform(HardCodedOutputStream.STDOUT);
+   }
+
+   public static <OutStreamT extends OutputStream & Serializable>
+   PTransform<PCollection<byte[]>, PDone> write(OutStreamT out)
+   {
+      return new OutTransform(out);
+   }
+
+   public static <InStreamT extends InputStream & Serializable>
+   PTransform<PBegin, PCollection<byte[]>> readUnbounded(InStreamT in)
+   {
+      return Read.from(new UnboundSource(in));
+   }
+
+   public static <InStreamT extends InputStream & Serializable>
+   PTransform<PBegin, PCollection<byte[]>>
+   readBound(final InStreamT in)
+   {
+      return Read.from(new BoundSource(in));
+   }
+
+   ;
 }

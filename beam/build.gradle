@@ -34,7 +34,7 @@ jacocoTestCoverageVerification {
    violationRules {
       rule {
          limit {
-            minimum = 0.8
+            minimum = 0.9
          }
       }
    }
@@ -49,6 +49,10 @@ jacocoTestReport {
 
 test {
    finalizedBy jacocoTestReport
+   testLogging {
+      events "failed"
+      exceptionFormat "full"
+   }
 }
 
 bintray {

@@ -20,6 +20,7 @@
 package com.wtanaka.beam;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -28,21 +29,38 @@ import org.apache.beam.sdk.io.BoundedSource;
 import org.apache.beam.sdk.io.UnboundedSource;
 import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
+import org.apache.beam.sdk.testing.PAssert;
+import org.apache.beam.sdk.testing.TestPipeline;
+import org.apache.beam.sdk.transforms.Create;
 import org.apache.beam.sdk.transforms.windowing.BoundedWindow;
+import org.apache.beam.sdk.values.PCollection;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import com.wtanaka.beam.StreamIO.BoundSource.StdinBoundedReader;
+import com.wtanaka.beam.transforms.ByteArrayToString;
 
 /**
- * Tests for StdinIO
- */
-public class StdinIOTest
+ * @author $Author$
+ * @version $Name$ $Date$
+ **/
+@RunWith(JUnit4.class)
+public class StreamIOTest
 {
    private final PipelineOptions m_options = PipelineOptionsFactory.create();
-   private StdinIO.BoundSource m_boundSource;
-   private StdinIO.BoundSource m_boundSourceByteSource;
-   private StdinIO.UnboundSource m_unbounded;
-   private StdinIO.UnboundSource.UnboundReader m_reader;
+   private StreamIO.BoundSource m_boundSource;
+   private StreamIO.BoundSource m_boundSourceByteSource;
+   private StreamIO.UnboundSource m_unbounded;
+   private StreamIO.UnboundSource.UnboundReader m_reader;
+
+   private static TestPipeline newPipeline()
+   {
+      return TestPipeline.create().enableAbandonedNodeEnforcement(
+         true);
+   }
 
    @Test
    public void advance() throws Exception
@@ -58,11 +76,10 @@ public class StdinIOTest
       m_reader.close();
    }
 
-   private StdinIO.BoundSource.StdinBoundedReader createBytesReader()
+   private StdinBoundedReader createBytesReader()
    {
-      return (StdinIO.BoundSource.StdinBoundedReader)
-         m_boundSourceByteSource
-            .createReader(m_options);
+      return (StdinBoundedReader) m_boundSourceByteSource.createReader(
+         m_options);
    }
 
    @Test
@@ -93,7 +110,7 @@ public class StdinIOTest
    {
       final Coder<UnboundedSource.CheckpointMark>
          coder = m_unbounded.getCheckpointMarkCoder();
-      Assert.assertNull(coder);
+      Assert.assertNotNull(coder);
    }
 
    @Test
@@ -149,15 +166,15 @@ public class StdinIOTest
    @Before
    public void setUp()
    {
-      m_boundSource = new StdinIO.BoundSource();
-      m_boundSourceByteSource = new StdinIO.BoundSource(
+      m_boundSource = new StreamIO.BoundSource();
+      m_boundSourceByteSource = new StreamIO.BoundSource(
          new SerializableByteArrayInputStream(new byte[]{65, 10}));
 
-      m_unbounded = new StdinIO.UnboundSource();
+      m_unbounded = new StreamIO.UnboundSource();
       final ByteArrayInputStream bytes = new ByteArrayInputStream(
          new byte[]{0x65, 0x0a, 0x66, 0x0a});
-      m_reader = new StdinIO.UnboundSource.UnboundReader(
-         new StdinIO.UnboundSource(), bytes);
+      m_reader = new StreamIO.UnboundSource.UnboundReader(
+         new StreamIO.UnboundSource(), bytes);
    }
 
    @Test
@@ -177,34 +194,126 @@ public class StdinIOTest
    }
 
    @Test
+   public void testBoundInputCustomStream()
+   {
+      TestPipeline p = newPipeline();
+      final SerializableByteArrayOutputStream baos =
+         new SerializableByteArrayOutputStream();
+      p
+         // bounded test data
+         .apply(Create.of(new byte[]{0x68, 0x0a}, new byte[]{0x65, 0x0a}))
+         // sink to stdout
+         .apply(StreamIO.write(baos));
+      p.run();
+      byte[] result = baos.toByteArray();
+      Assert.assertTrue(result[0] == 0x68 || result[0] == 0x65);
+      Assert.assertEquals(0x0a, result[1]);
+      Assert.assertTrue(result[2] == 0x68 || result[2] == 0x65);
+      Assert.assertEquals(0x0a, result[3]);
+      Assert.assertEquals(4, result.length);
+   }
+
+   @Test
+   public void testBoundInputStderr()
+   {
+      TestPipeline p = newPipeline();
+      p
+         // bounded test data
+         .apply(Create.of(new byte[]{0x68, 0x0a}, new byte[]{0x65, 0x0a}))
+         // sink to stdout
+         .apply(StreamIO.stderr());
+      p.run();
+   }
+
+   @Test
+   public void testBoundInputStdout()
+   {
+      TestPipeline p = newPipeline();
+      p
+         // bounded test data
+         .apply(Create.of(new byte[]{0x68, 0x0a}, new byte[]{0x65, 0x0a}))
+         // sink to stdout
+         .apply(StreamIO.stdout());
+      p.run();
+   }
+
+   @Test
    public void testConstruct()
    {
-      new StdinIO.UnboundSource.UnboundReader(null);
+      new StreamIO.UnboundSource.UnboundReader(null);
+   }
+
+   @Test
+   public void testConstructor()
+   {
+      new StreamIO();
    }
 
    @Test
    public void testCreateReader()
    {
-      m_boundSource
-         .createReader(m_options);
+      m_boundSource.createReader(m_options);
    }
 
    @Test
    public void testReadBound()
    {
-      StdinIO.readBound();
+      final SerializableByteArrayInputStream bais = new
+         SerializableByteArrayInputStream(new
+         byte[]
+         {0x68, 0x0a, 0x65, 0x0a, 0x6c, 0x0a, 0x6c, 0x0a, 0x6f, 0x0a});
+      final TestPipeline pipeline = newPipeline();
+      PCollection<String> lines = pipeline.apply(
+         StreamIO.readBound(bais)).apply(ByteArrayToString.of("UTF-8"));
+      pipeline.run();
+      PAssert.that(lines).containsInAnyOrder("h", "e", "l", "l", "o");
    }
 
    @Test
    public void testReadUnbounded()
    {
-      StdinIO.readUnbounded();
+      StreamIO.stdinUnbounded();
+      StreamIO.readUnbounded(
+         new SerializableByteArrayInputStream(new byte[]{}));
    }
 
    @Test
    public void testReaderAdvance() throws IOException
    {
       createBytesReader().advance();
+   }
+
+   @Test
+   public void testReaderGetSource()
+   {
+      Assert.assertSame(m_boundSourceByteSource,
+         createBytesReader().getCurrentSource());
+   }
+
+   @Test
+   public void testStdinBound()
+   {
+      StreamIO.stdinBound();
+   }
+
+   @Test
+   public void testUnboundSourceConstructor()
+   {
+      final ByteArrayInputStream bais = new ByteArrayInputStream(
+         new byte[]{});
+      new StreamIO.UnboundSource(bais);
+   }
+
+   @Test
+   public void testWriteBound()
+   {
+      TestPipeline pipeline = TestPipeline.create();
+      final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      final PCollection<String> source = pipeline.apply(
+         Create.of("foo", "bar", "baz"));
+      // source.apply(new StreamIO.Write.Bound(baos));
+      // TODO: This isn't working currently, see comment at top of StreamIO
+      // m_pipeline.run();
    }
 
    @Test

@@ -72,6 +72,7 @@ public class Sort
 
    public static void main(String[] args)
    {
-      MainRunner.cmdLine(args, new Transform());
+      MainRunner.cmdLine(StreamIO.stdinBound(), StreamIO.stdout(),
+         args, new Transform());
    }
 }

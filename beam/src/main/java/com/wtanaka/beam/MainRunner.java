@@ -21,7 +21,6 @@ package com.wtanaka.beam;
 
 import org.apache.beam.runners.direct.DirectRunner;
 import org.apache.beam.sdk.Pipeline;
-import org.apache.beam.sdk.io.Read;
 import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.transforms.PTransform;
@@ -43,8 +42,8 @@ public class MainRunner
    public static void cmdLine(String[] args, PTransform<PCollection<byte[]>,
       PCollection<byte[]>> transform)
    {
-      MainRunner.cmdLine(Read.from(new StdinIO.BoundSource()),
-         StdoutIO.write(), args, transform);
+      MainRunner.cmdLine(StreamIO.stdinUnbounded(),
+         StreamIO.stdout(), args, transform);
    }
 
    /**

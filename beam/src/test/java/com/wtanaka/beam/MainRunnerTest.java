@@ -19,10 +19,8 @@
  */
 package com.wtanaka.beam;
 
-import java.io.InputStream;
 import java.io.PrintStream;
 
-import org.apache.beam.sdk.io.Read;
 import org.apache.beam.sdk.transforms.PTransform;
 import org.apache.beam.sdk.values.PCollection;
 import org.junit.Assert;
@@ -50,15 +48,16 @@ public class MainRunnerTest
    {
       final byte[] bytes = {65, 10, 66, 10};
       final PrintStream oldOut = System.out;
-      InputStream in = new SerializableByteArrayInputStream(bytes);
+      final SerializableByteArrayInputStream in =
+         new SerializableByteArrayInputStream(bytes);
       try
       {
          SerializableByteArrayOutputStream out =
             new SerializableByteArrayOutputStream();
          assert 0 == SerializableByteArrayOutputStream.toByteArray().length;
          System.setOut(new PrintStream(out));
-         MainRunner.cmdLine(Read.from(new StdinIO.BoundSource(in)),
-            StdoutIO.write(),
+         MainRunner.cmdLine(StreamIO.readBound(in),
+            StreamIO.write(out),
             new String[]{}, new PassThroughTransform());
          final byte[] result =
             SerializableByteArrayOutputStream.toByteArray();

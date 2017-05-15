@@ -60,6 +60,8 @@ public class CatTest
 
          Cat.main(new String[]{});
 
+         newOut.flush();
+         newOut.close();
          Assert.assertArrayEquals(new byte[]{0x01}, baos.toByteArray());
       }
       finally

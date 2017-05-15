@@ -22,7 +22,6 @@ package com.wtanaka.beam;
 import java.io.Serializable;
 import java.util.logging.Level;
 
-import org.apache.beam.sdk.io.Read;
 import org.apache.beam.sdk.transforms.Combine;
 import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.PTransform;
@@ -133,7 +132,7 @@ public class StreamingWc
       public PCollection<byte[]> expand(final PCollection<byte[]> input)
       {
          input.apply(ByteArrayToString.of("UTF-8")).apply
-            (LoggingIO.write("StreamingWc.Transform", Level.SEVERE));
+            (LoggingIO.write("StreamingWc.OutTransform", Level.SEVERE));
          final PCollection<byte[]> triggered = input.apply(
             Window.<byte[]>configure().triggering(
                Repeatedly.forever
@@ -157,7 +156,7 @@ public class StreamingWc
    public static void main(String[] args)
    {
       MainRunner.cmdLine(
-         Read.from(new StdinIO.UnboundSource()),
+         StreamIO.stdinUnbounded(),
          Sequential.of(
             ByteArrayToString.of("UTF-8"),
             LoggingIO.write("StreamingWc", Level.WARNING)),
