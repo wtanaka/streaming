@@ -28,6 +28,8 @@ import org.apache.beam.sdk.values.PCollection;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.wtanaka.beam.StdoutIO.StdoutSink;
+
 /**
  * Test MainRunner
  */
@@ -67,5 +69,11 @@ public class MainRunnerTest
          // Clean up the global variable
          SerializableByteArrayOutputStream.reset();
       }
+   }
+
+   @Test
+   public void testConstruct()
+   {
+      new MainRunner();
    }
 }

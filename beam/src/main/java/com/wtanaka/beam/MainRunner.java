@@ -30,6 +30,8 @@ import org.apache.beam.sdk.values.PBegin;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.PDone;
 
+import com.wtanaka.beam.StdoutIO.StdoutSink;
+
 /**
  * Utility code to run beam pipelines on the command line, processing stdin
  * into stdout
@@ -37,6 +39,10 @@ import org.apache.beam.sdk.values.PDone;
 @SuppressWarnings("WeakerAccess")
 public class MainRunner
 {
+   MainRunner()
+   {
+   }
+
    public static void cmdLine(String[] args, PTransform<PCollection<byte[]>,
       PCollection<byte[]>> transform)
    {
@@ -47,12 +53,14 @@ public class MainRunner
    /**
     * @param args command line arguments
     * @param transform PTransform to convert input to output
+    * @param in PTransform providing input data
+    * @param out PTransform to send output data
     */
-   public static void cmdLine(PTransform<PBegin, PCollection<byte[]>> in,
-                       PTransform<PCollection<byte[]>, PDone> out,
-                       final String[] args,
-                       PTransform<PCollection<byte[]>, PCollection<byte[]>>
-                          transform)
+   public static void cmdLine(
+      PTransform<PBegin, PCollection<byte[]>> in,
+      PTransform<PCollection<byte[]>, PDone> out,
+      final String[] args,
+      PTransform<PCollection<byte[]>, PCollection<byte[]>> transform)
    {
       Pipeline p = createPipeline(args);
       final PCollection<byte[]> stdin = p.apply(in);

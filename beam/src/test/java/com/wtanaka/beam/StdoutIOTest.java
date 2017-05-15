@@ -12,14 +12,27 @@ import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.wtanaka.beam.StdoutIO.StdoutSink;
+
 /**
  * Test code for StdoutSink
  */
-public class StdoutSinkTest
+public class StdoutIOTest
 {
 
    private final PipelineOptions m_pipelineOptions =
       PipelineOptionsFactory.create();
+
+   private static class TestOutputStream extends OutputStream implements
+      Serializable
+   {
+      private static final long serialVersionUID = 1L;
+
+      @Override
+      public void write(final int i) throws IOException
+      {
+      }
+   }
 
    @Test
    public void constructWithStream()
@@ -46,6 +59,12 @@ public class StdoutSinkTest
             (m_pipelineOptions);
       Assert.assertSame(writeOperation, writer.getWriteOperation());
       return writer;
+   }
+
+   @Test
+   public void testWrite()
+   {
+      Assert.assertNotNull(StdoutIO.write());
    }
 
    @Test
@@ -118,16 +137,5 @@ public class StdoutSinkTest
    {
       final StdoutSink sink = new StdoutSink();
       sink.validate(m_pipelineOptions);
-   }
-
-   private static class TestOutputStream extends OutputStream implements
-      Serializable
-   {
-      private static final long serialVersionUID = 1L;
-
-      @Override
-      public void write(final int i) throws IOException
-      {
-      }
    }
 }
