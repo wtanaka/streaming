@@ -21,21 +21,39 @@ package com.wtanaka.beam;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 
+import org.apache.beam.sdk.coders.ByteArrayCoder;
+import org.apache.beam.sdk.testing.PAssert;
 import org.apache.beam.sdk.testing.TestPipeline;
+import org.apache.beam.sdk.testing.TestStream;
 import org.apache.beam.sdk.transforms.Create;
+import org.apache.beam.sdk.transforms.MapElements;
+import org.apache.beam.sdk.transforms.SerializableFunction;
+import org.apache.beam.sdk.values.PCollection;
+import org.apache.beam.sdk.values.TimestampedValue;
+import org.joda.time.Instant;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+
+import static org.apache.beam.sdk.values.TypeDescriptors.strings;
 
 public class StreamingWcTest
 {
    @Rule
    public TestPipeline m_pipeline = TestPipeline.create()
       .enableAbandonedNodeEnforcement(true);
+
+   private static <T> TimestampedValue<T> tv(T value, long instant)
+   {
+      return TimestampedValue.of(value, new Instant(instant));
+   }
 
    @Test
    public void mergeAccumulators() throws Exception
@@ -91,5 +109,50 @@ public class StreamingWcTest
          System.setIn(oldIn);
          System.setOut(oldOut);
       }
+   }
+
+   @Test
+   public void testPauseInMiddle()
+   {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      PrintWriter pw = new PrintWriter(new OutputStreamWriter(baos));
+      try
+      {
+         pw.println("hello world");
+      }
+      finally
+      {
+         pw.close();
+      }
+      final byte[] bytes = baos.toByteArray();
+
+      final TestStream<byte[]> input = TestStream
+         .create(ByteArrayCoder.of())
+         .addElements(tv(bytes, 100))
+         .advanceWatermarkTo(new Instant(0))
+         .addElements(tv(bytes, 200))
+         .advanceWatermarkTo(new Instant(1))
+         .addElements(
+            tv(bytes, 10000), tv(bytes, 10000), tv(bytes, 10000),
+            tv(bytes, 10000), tv(bytes, 10000), tv(bytes, 10000),
+            tv(bytes, 10000), tv(bytes, 10000))
+         .advanceWatermarkToInfinity();
+
+      final PCollection<byte[]> output =
+         m_pipeline.apply(input).apply(new StreamingWc.Transform());
+
+      output
+         .apply(MapElements.into(strings()).via(
+            (SerializableFunction<byte[], String>) b -> Arrays
+               .toString(b)))
+         .apply(LoggingIO.write("DEBUG", Level.SEVERE));
+
+      PAssert.that(output).containsInAnyOrder(
+         "1 2 12".getBytes(),
+         "2 4 24".getBytes(),
+         "10 20 120".getBytes(), // EARLY
+         "10 20 120".getBytes() // ON TIME
+      );
+      m_pipeline.run();
    }
 }

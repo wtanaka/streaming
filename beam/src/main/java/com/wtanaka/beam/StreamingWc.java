@@ -136,7 +136,7 @@ public class StreamingWc
          final PCollection<byte[]> triggered = input.apply(
             Window.<byte[]>configure().triggering(
                Repeatedly.forever
-                  (AfterPane.elementCountAtLeast(11)))
+                  (AfterPane.elementCountAtLeast(1)))
                .accumulatingFiredPanes());
          PCollection<WcStats> stats = triggered.apply(
             Combine.globally(new StatsCombineFn()));
