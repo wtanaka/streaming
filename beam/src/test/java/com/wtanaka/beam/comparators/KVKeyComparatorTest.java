@@ -40,4 +40,10 @@ public class KVKeyComparatorTest
       Assert.assertEquals(Integer.valueOf(1), list.get(1).getValue());
       Assert.assertEquals(Integer.valueOf(2), list.get(2).getValue());
    }
+
+   @Test
+   public void testConstructor()
+   {
+      new KVKeyComparator();
+   }
 }

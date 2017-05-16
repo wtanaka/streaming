@@ -58,6 +58,12 @@ public class StreamingWcTest
    }
 
    @Test
+   public void testConstructor()
+   {
+      new StreamingWc();
+   }
+
+   @Test
    public void testEmpty()
    {
       m_pipeline

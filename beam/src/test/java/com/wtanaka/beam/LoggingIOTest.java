@@ -40,6 +40,12 @@ public class LoggingIOTest
       .enableAbandonedNodeEnforcement(true);
 
    @Test
+   public void testConstruct()
+   {
+      new LoggingIO();
+   }
+
+   @Test
    public void testOf() throws Exception
    {
       final PCollection<Long> longs = m_pipeline.apply(
