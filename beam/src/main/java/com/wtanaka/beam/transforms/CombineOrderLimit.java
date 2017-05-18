@@ -114,6 +114,6 @@ public class CombineOrderLimit
       ComparatorT comparator,
       int limit)
    {
-      return new Transform(vCombineFn, comparator, limit);
+      return new Transform<>(vCombineFn, comparator, limit);
    }
 }

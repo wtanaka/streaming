@@ -27,8 +27,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import javax.annotation.Nullable;
-
 import org.apache.beam.sdk.coders.ByteArrayCoder;
 import org.apache.beam.sdk.coders.Coder;
 import org.apache.beam.sdk.io.BoundedSource;
@@ -50,23 +48,24 @@ public class StdinIO
    /**
     * BoundSource
     */
-   static class BoundSource extends BoundedSource<byte[]>
+   static class BoundSource<InStrT extends InputStream & Serializable> extends
+      BoundedSource<byte[]>
    {
       private static final long serialVersionUID = 1L;
-      private final InputStream m_serializableInStream;
+      private final InStrT m_serializableInStream;
 
       /**
        * Source.Reader implementation for Stdin
        */
-      static class StdinBoundedReader extends BoundedReader<byte[]>
+      static class StdinBoundedReader<InStrT extends InputStream & Serializable> extends BoundedReader<byte[]>
       {
-         private final InputStream m_stream;
+         private final InStrT m_stream;
          private final BoundedSource<byte[]> m_source;
          private final ByteArrayOutputStream m_buffer =
             new ByteArrayOutputStream();
 
          private StdinBoundedReader(final BoundedSource<byte[]> source,
-                                    InputStream stream)
+                                    InStrT stream)
          {
             m_source = source;
             m_stream = stream;
@@ -133,7 +132,7 @@ public class StdinIO
          m_serializableInStream = null;
       }
 
-      BoundSource(InputStream serializableInStream)
+      BoundSource(InStrT serializableInStream)
       {
          assert serializableInStream instanceof Serializable :
             serializableInStream + " is not Serializable";
@@ -162,7 +161,7 @@ public class StdinIO
       }
 
       @Override
-      public List<? extends BoundedSource<byte[]>> splitIntoBundles(
+      public List<? extends BoundedSource<byte[]>> split(
          final long desiredBundleSizeBytes, final PipelineOptions options)
       {
          return Collections.singletonList(this);
@@ -288,22 +287,12 @@ public class StdinIO
       @Override
       public UnboundedReader<byte[]> createReader(
          final PipelineOptions options,
-         @Nullable final CheckpointMark ignored)
+         final CheckpointMark ignored)
          throws IOException
       {
          return new UnboundReader(this);
       }
 
-      @Override
-      public List<? extends UnboundedSource<byte[], CheckpointMark>>
-      generateInitialSplits(
-         final int desiredNumSplits, final PipelineOptions options)
-         throws Exception
-      {
-         return Collections.singletonList(this);
-      }
-
-      @Nullable
       @Override
       public Coder<CheckpointMark> getCheckpointMarkCoder()
       {
@@ -314,6 +303,15 @@ public class StdinIO
       public Coder<byte[]> getDefaultOutputCoder()
       {
          return ByteArrayCoder.of();
+      }
+
+      @Override
+      public List<? extends UnboundedSource<byte[], CheckpointMark>>
+      split(
+         final int desiredNumSplits, final PipelineOptions options)
+         throws Exception
+      {
+         return Collections.singletonList(this);
       }
 
       @Override

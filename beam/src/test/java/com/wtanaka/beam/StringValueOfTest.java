@@ -19,7 +19,7 @@
  */
 package com.wtanaka.beam;
 
-import org.apache.beam.sdk.io.CountingInput;
+import org.apache.beam.sdk.io.GenerateSequence;
 import org.apache.beam.sdk.testing.PAssert;
 import org.apache.beam.sdk.testing.TestPipeline;
 import org.apache.beam.sdk.transforms.PTransform;
@@ -43,7 +43,7 @@ public class StringValueOfTest
    public void testExpand() throws Exception
    {
       final PCollection<Long> source = m_pipeline.apply(
-         CountingInput.upTo(10L));
+         GenerateSequence.from(0L).to(10L));
       final PTransform<PCollection<Long>, PCollection<String>> transform =
          new StringValueOf<>();
       final PCollection<String> strings = source.apply(transform);

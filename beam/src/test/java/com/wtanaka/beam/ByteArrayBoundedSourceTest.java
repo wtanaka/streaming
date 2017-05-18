@@ -64,7 +64,7 @@ public class ByteArrayBoundedSourceTest
       final ByteArrayBoundedSource source = new ByteArrayBoundedSource(
          new byte[][]{new byte[]{1, 10}});
       final List<? extends BoundedSource<byte[]>>
-         bundleList = source.splitIntoBundles(10,
+         bundleList = source.split(10,
          PipelineOptionsFactory.create());
       Assert.assertNotNull(bundleList);
    }

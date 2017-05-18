@@ -22,15 +22,12 @@ package com.wtanaka.beam;
 import org.apache.beam.runners.direct.DirectRunner;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.io.Read;
-import org.apache.beam.sdk.io.Write;
 import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.transforms.PTransform;
 import org.apache.beam.sdk.values.PBegin;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.PDone;
-
-import com.wtanaka.beam.StdoutIO.StdoutSink;
 
 /**
  * Utility code to run beam pipelines on the command line, processing stdin
@@ -47,7 +44,7 @@ public class MainRunner
       PCollection<byte[]>> transform)
    {
       MainRunner.cmdLine(Read.from(new StdinIO.BoundSource()),
-         Write.to(new StdoutSink()), args, transform);
+         StdoutIO.write(), args, transform);
    }
 
    /**
@@ -62,6 +59,7 @@ public class MainRunner
       final String[] args,
       PTransform<PCollection<byte[]>, PCollection<byte[]>> transform)
    {
+      assert transform != null;
       Pipeline p = createPipeline(args);
       final PCollection<byte[]> stdin = p.apply(in);
       final PCollection<byte[]> output = stdin.apply(transform);

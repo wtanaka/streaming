@@ -21,7 +21,7 @@ package com.wtanaka.beam;
 
 import java.util.logging.Level;
 
-import org.apache.beam.sdk.io.CountingInput;
+import org.apache.beam.sdk.io.GenerateSequence;
 import org.apache.beam.sdk.testing.TestPipeline;
 import org.apache.beam.sdk.values.PCollection;
 import org.junit.Rule;
@@ -43,7 +43,7 @@ public class LoggingIOTest
    public void testOf() throws Exception
    {
       final PCollection<Long> longs = m_pipeline.apply(
-         CountingInput.upTo(10L));
+         GenerateSequence.from(0L).to(10L));
       final PCollection<String> strings = longs.apply(
          new StringValueOf<>());
       strings.apply(LoggingIO.write("LoggingIOTest", Level.FINEST));

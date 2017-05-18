@@ -81,7 +81,7 @@ class ByteArrayBoundedSource extends BoundedSource<byte[]>
     * use the start/skip constructor of ByteArrayBoundedReader.
     */
    @Override
-   public List<? extends BoundedSource<byte[]>> splitIntoBundles(
+   public List<? extends BoundedSource<byte[]>> split(
       final long desiredBundleSizeBytes, final PipelineOptions options)
    {
       return Collections.singletonList(this);

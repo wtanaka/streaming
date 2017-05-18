@@ -19,8 +19,6 @@
  */
 package com.wtanaka.beam.behavior;
 
-import java.util.logging.Level;
-
 import org.apache.beam.sdk.coders.VarIntCoder;
 import org.apache.beam.sdk.testing.PAssert;
 import org.apache.beam.sdk.testing.TestPipeline;
@@ -33,11 +31,7 @@ import org.apache.beam.sdk.transforms.windowing.Window;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.TimestampedValue;
 import org.joda.time.Instant;
-import org.junit.Assert;
 import org.junit.Test;
-
-import com.wtanaka.beam.LoggingIO;
-import com.wtanaka.beam.StringValueOf;
 
 /**
  * Test AfterPane behavior per https://wtanaka.com/node/8241
@@ -68,7 +62,8 @@ public class AfterPaneBehaviorTest
          testPipeline
             .apply(stream)
             .apply(
-               Window.<Integer>triggering(trigger).accumulatingFiredPanes())
+               Window.<Integer>configure().triggering(trigger)
+                  .accumulatingFiredPanes())
             .apply(Sum.integersGlobally());
 //      result
 //         .apply(new StringValueOf<>())

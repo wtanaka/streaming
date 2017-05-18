@@ -10,7 +10,7 @@ test: vendor/bundle user_network galaxy compile
 	$(KITCHEN) $@
 
 compile:
-	./gradlew :flink-sample:shadowJar :beam-dev:shadowJar :beam:shadowJar
+	./gradlew :flink-sample:shadowJar :beam:shadowJar
 
 lsflink:
 	docker exec flink-master /opt/flink-1.1.2/bin/flink list

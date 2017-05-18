@@ -39,9 +39,8 @@ public class CoderRegistryBehaviorTest
    @Test
    public void testGettingCoder() throws CannotProvideCoderException
    {
-      final CoderRegistry registry = new CoderRegistry();
-      registry.registerStandardCoders();
-      Assert.assertEquals(ByteArrayCoder.of(), registry.getDefaultCoder
+      final CoderRegistry registry = CoderRegistry.createDefault();
+      Assert.assertEquals(ByteArrayCoder.of(), registry.getCoder
          (byte[].class));
    }
 }

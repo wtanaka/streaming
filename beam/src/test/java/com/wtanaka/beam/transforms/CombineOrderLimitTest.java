@@ -65,8 +65,8 @@ public class CombineOrderLimitTest
 
       final int limit = 1;
 
-      final Window.Bound<KV<String, Integer>> triggering = Window
-         .<KV<String, Integer>>triggering(
+      final Window<KV<String, Integer>> triggering = Window
+         .<KV<String, Integer>>configure().triggering(
             Repeatedly.forever(AfterPane
                .elementCountAtLeast(1))).accumulatingFiredPanes();
 

@@ -135,13 +135,13 @@ public class StreamingWc
          input.apply(ByteArrayToString.of("UTF-8")).apply
             (LoggingIO.write("StreamingWc.Transform", Level.SEVERE));
          final PCollection<byte[]> triggered = input.apply(
-            Window.<byte[]>triggering(
+            Window.<byte[]>configure().triggering(
                Repeatedly.forever
                   (AfterPane.elementCountAtLeast(11)))
                .accumulatingFiredPanes());
          PCollection<WcStats> stats = triggered.apply(
             Combine.globally(new StatsCombineFn()));
-         return stats.apply(MapElements.via(
+         return stats.apply(MapElements.<WcStats, byte[]>via(
             new SimpleFunction<WcStats, byte[]>()
             {
                private static final long serialVersionUID = 1L;

@@ -20,15 +20,10 @@
 package com.wtanaka.beam;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Serializable;
 
-import org.apache.beam.sdk.coders.Coder;
-import org.apache.beam.sdk.coders.VoidCoder;
-import org.apache.beam.sdk.io.Sink;
-import org.apache.beam.sdk.io.Write;
-import org.apache.beam.sdk.options.PipelineOptions;
+import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.PTransform;
+import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.PDone;
 
@@ -37,143 +32,25 @@ import org.apache.beam.sdk.values.PDone;
  */
 class StdoutIO
 {
-   /**
-    * Sink implementation for Stdout
-    */
-   static class StdoutSink extends Sink<byte[]>
+   static class Write extends PTransform<PCollection<byte[]>, PDone>
    {
-      private static final long serialVersionUID = 1L;
-      private final OutputStream m_serializableOutputStream;
-
-      static class StdoutWriter extends Writer<byte[], Void>
-      {
-         private final WriteOperation<byte[], Void> m_writeOperation;
-         private final OutputStream m_outputStream;
-
-         StdoutWriter(
-            final WriteOperation<byte[], Void> writeOperation,
-            final OutputStream outputStream)
-         {
-            m_writeOperation = writeOperation;
-            m_outputStream = outputStream;
-         }
-
-         @Override
-         public Void close()
-         {
-            return null;
-         }
-
-         @Override
-         public WriteOperation<byte[], Void> getWriteOperation()
-         {
-            return m_writeOperation;
-         }
-
-         @Override
-         public void open(final String uId)
-         {
-         }
-
-         @Override
-         public void write(final byte[] value) throws IOException
-         {
-            m_outputStream.write(value);
-            // System.out.write((int) '\n');
-         }
-      }
-
-      static class StdoutWriteOperation extends Sink
-         .WriteOperation<byte[], Void>
-      {
-         private static final long serialVersionUID = 1L;
-         private final OutputStream m_serializableOutputStream;
-         private final Sink<byte[]> m_sink;
-
-         StdoutWriteOperation(final Sink<byte[]> sink,
-                              final OutputStream serializableOutputStream)
-         {
-            m_sink = sink;
-            assert serializableOutputStream == null ||
-               (serializableOutputStream instanceof Serializable) :
-               "Stream " + serializableOutputStream + " must be Serializable";
-            m_serializableOutputStream = serializableOutputStream;
-         }
-
-         @Override
-         public Writer<byte[], Void> createWriter(
-            final PipelineOptions options)
-         {
-            return new StdoutSink.StdoutWriter(this,
-               getStream());
-         }
-
-         @Override
-         public void finalize(final Iterable<Void> writerResults,
-                              final PipelineOptions options)
-            throws IOException
-         {
-            getStream().flush();
-         }
-
-         @Override
-         public Sink<byte[]> getSink()
-         {
-            return m_sink;
-         }
-
-         private OutputStream getStream()
-         {
-            if (m_serializableOutputStream == null)
-            {
-               return System.out;
-            }
-            else
-            {
-               return m_serializableOutputStream;
-            }
-         }
-
-         @Override
-         public Coder<Void> getWriterResultCoder()
-         {
-            return VoidCoder.of();
-         }
-
-         @Override
-         public void initialize(final PipelineOptions options)
-         {
-         }
-      }
-
-      StdoutSink()
-      {
-         m_serializableOutputStream = null;
-      }
-
-      StdoutSink(
-         final OutputStream serializableOutput)
-      {
-         m_serializableOutputStream = serializableOutput;
-      }
-
       @Override
-      public WriteOperation<byte[], ?> createWriteOperation(
-         final PipelineOptions options)
+      public PDone expand(final PCollection<byte[]> input)
       {
-         return new StdoutSink.StdoutWriteOperation(this,
-            m_serializableOutputStream);
-      }
-
-      @Override
-      public void validate(final PipelineOptions options)
-      {
-
+         input.apply(ParDo.of(new DoFn<byte[], Void>()
+         {
+            @ProcessElement
+            public void processElement(ProcessContext c) throws IOException
+            {
+               System.out.write(c.element());
+            }
+         }));
+         return PDone.in(input.getPipeline());
       }
    }
 
    public static PTransform<PCollection<byte[]>, PDone> write()
    {
-      return Write.to(new StdoutSink());
+      return new Write();
    }
 }

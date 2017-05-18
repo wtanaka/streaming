@@ -78,7 +78,7 @@ public class StdinIOTest
    {
       final List<? extends UnboundedSource<byte[], UnboundedSource
          .CheckpointMark>>
-         splits = m_unbounded.generateInitialSplits(1, null);
+         splits = m_unbounded.split(1, null);
       Assert.assertTrue(splits.size() > 0);
    }
 
@@ -164,7 +164,7 @@ public class StdinIOTest
    public void splitIntoBundles()
    {
       final List<? extends BoundedSource<byte[]>>
-         result = m_boundSource.splitIntoBundles(100,
+         result = m_boundSource.split(100,
          m_options);
 
       Assert.assertEquals(1, result.size());

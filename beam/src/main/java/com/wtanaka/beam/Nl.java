@@ -22,20 +22,20 @@ package com.wtanaka.beam;
 import org.apache.beam.sdk.coders.ByteArrayCoder;
 import org.apache.beam.sdk.coders.KvCoder;
 import org.apache.beam.sdk.coders.VarIntCoder;
+import org.apache.beam.sdk.state.StateSpec;
+import org.apache.beam.sdk.state.StateSpecs;
+import org.apache.beam.sdk.state.ValueState;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.PTransform;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.transforms.SerializableFunction;
 import org.apache.beam.sdk.transforms.WithKeys;
-import org.apache.beam.sdk.util.state.StateSpec;
-import org.apache.beam.sdk.util.state.StateSpecs;
-import org.apache.beam.sdk.util.state.ValueState;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 
 /**
  * <p>Implementation of an "approximate" version of nl
- *
+ * <p>
  * yes | head -50 | java -cp beam/build/libs/beam-all.jar
  * com.wtanaka.beam.Nl
  */
@@ -54,7 +54,7 @@ public class Nl
          private static final int FIRST_LINE_NUM = 1;
 
          @StateId(STATE_ID)
-         private final StateSpec<Object, ValueState<Integer>>
+         private final StateSpec<ValueState<Integer>>
             stateCell = StateSpecs.value(VarIntCoder.of());
 
          @ProcessElement
@@ -84,6 +84,10 @@ public class Nl
             .setCoder(KvCoder.of(VarIntCoder.of(), ByteArrayCoder.of()))
             .apply(ParDo.of(new CountingDoFn()));
       }
+   }
+
+   Nl()
+   {
    }
 
    public static void main(String[] args)

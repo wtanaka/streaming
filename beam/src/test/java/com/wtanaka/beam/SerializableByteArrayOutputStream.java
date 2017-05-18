@@ -24,7 +24,8 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import org.apache.commons.lang3.ArrayUtils;
+import org.apache.beam.sdk.repackaged.org.apache.commons.lang3.ArrayUtils;
+
 
 /**
  * <p>Serializable ByteArrayInputStream

@@ -19,6 +19,10 @@
  */
 package com.wtanaka.beam;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.io.Serializable;
 
 import org.apache.beam.sdk.coders.ByteArrayCoder;
@@ -49,6 +53,12 @@ public class NlTest implements Serializable
       .enableAbandonedNodeEnforcement(true);
 
    @Test
+   public void testConstructor()
+   {
+      new Nl();
+   }
+
+   @Test
    public void testEmpty()
    {
       final PCollection<byte[]> output =
@@ -56,6 +66,26 @@ public class NlTest implements Serializable
             .apply(new Nl.Transform());
       PAssert.that(output).empty();
       m_pipeline.run();
+   }
+
+   @Test
+   public void testMain()
+   {
+      final InputStream oldIn = System.in;
+      final PrintStream oldOut = System.out;
+      try
+      {
+         System.setIn(new ByteArrayInputStream(new byte[]{0x65, 0x0a,
+            0x66, 0x0a}));
+         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+         System.setOut(new PrintStream(baos));
+         Nl.main(new String[]{});
+      }
+      finally
+      {
+         System.setIn(oldIn);
+         System.setOut(oldOut);
+      }
    }
 
    @Test
