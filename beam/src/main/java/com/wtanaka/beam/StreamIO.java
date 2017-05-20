@@ -346,15 +346,6 @@ public class StreamIO
          @Override
          public Instant getWatermark()
          {
-            try
-            {
-               throw new Exception("trace");
-            }
-            catch (Exception e)
-            {
-               e.printStackTrace();
-            }
-            // return m_watermark.plus(10000L);
             return m_watermark;
          }
 
