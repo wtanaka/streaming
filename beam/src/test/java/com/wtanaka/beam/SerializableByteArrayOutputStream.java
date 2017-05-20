@@ -67,4 +67,23 @@ class SerializableByteArrayOutputStream extends OutputStream implements
          s_bytes.add((byte) i);
       }
    }
+
+   /**
+    * We override this so that we can make it synchronized.  The Runner
+    * used in unit tests is multi-threaded, and the default
+    * implementation of this method calls {@link #write(int)} one at a
+    * type, so it is possible for two outputs to get interleaved; in a unit
+    * test, this makes the test non-deterministic.
+    *
+    * @param bytes
+    * @throws IOException
+    */
+   @Override
+   public void write(final byte[] bytes) throws IOException
+   {
+      synchronized (SerializableByteArrayOutputStream.class)
+      {
+         super.write(bytes);
+      }
+   }
 }
