@@ -33,6 +33,8 @@ import org.apache.beam.sdk.values.TimestampedValue;
 import org.joda.time.Instant;
 import org.junit.Test;
 
+import static com.wtanaka.beam.values.Timestamp.tv;
+
 /**
  * Test AfterPane behavior per https://wtanaka.com/node/8241
  */
@@ -43,15 +45,15 @@ public class AfterPaneBehaviorTest
    {
       final TestStream<Integer> stream = TestStream
          .create(VarIntCoder.of())
-         .addElements(TimestampedValue.of(2, new Instant(1234L)))
-         .addElements(TimestampedValue.of(3, new Instant(1235L)))
+         .addElements(tv(2, 1234L))
+         .addElements(tv(3, 1235L))
          .advanceWatermarkTo(new Instant(1234L))
          .advanceWatermarkTo(new Instant(1235L))
-         .addElements(TimestampedValue.of(5, new Instant(1236L)))
-         .addElements(TimestampedValue.of(7, new Instant(1237L)))
-         .addElements(TimestampedValue.of(11, new Instant(1238L)))
+         .addElements(tv(5, 1236L))
+         .addElements(tv(7, 1237L))
+         .addElements(tv(11, 1238L))
          .advanceWatermarkTo(new Instant(1238L))
-         .addElements(TimestampedValue.of(13, new Instant(1239L)))
+         .addElements(tv(13, 1239L))
          .advanceWatermarkTo(new Instant(1239L))
          .advanceWatermarkToInfinity();
       final Trigger trigger = Repeatedly.forever(

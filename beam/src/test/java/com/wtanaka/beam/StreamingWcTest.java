@@ -36,12 +36,12 @@ import org.apache.beam.sdk.transforms.Create;
 import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.SerializableFunction;
 import org.apache.beam.sdk.values.PCollection;
-import org.apache.beam.sdk.values.TimestampedValue;
 import org.joda.time.Instant;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 
+import static com.wtanaka.beam.values.Timestamp.tv;
 import static org.apache.beam.sdk.values.TypeDescriptors.strings;
 
 public class StreamingWcTest
@@ -49,11 +49,6 @@ public class StreamingWcTest
    @Rule
    public TestPipeline m_pipeline = TestPipeline.create()
       .enableAbandonedNodeEnforcement(true);
-
-   private static <T> TimestampedValue<T> tv(T value, long instant)
-   {
-      return TimestampedValue.of(value, new Instant(instant));
-   }
 
    @Test
    public void mergeAccumulators() throws Exception
@@ -143,8 +138,8 @@ public class StreamingWcTest
 
       output
          .apply(MapElements.into(strings()).via(
-            (SerializableFunction<byte[], String>) b -> Arrays
-               .toString(b)))
+            (SerializableFunction<byte[], String>)
+               b -> Arrays.toString(b)))
          .apply(LoggingIO.write("DEBUG", Level.SEVERE));
 
       PAssert.that(output).containsInAnyOrder(

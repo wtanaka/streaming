@@ -38,6 +38,8 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 
+import static com.wtanaka.beam.values.Timestamp.tv;
+
 /**
  * Test that WindowingStrategy is updated in the new PCollection and
  * untouched in the old PCollection when you apply a <code>Bound</code>
@@ -56,9 +58,9 @@ public class WindowingStrategyBehaviorTest
    private PCollection<String> makeTimestampedInput()
    {
       List<TimestampedValue<String>> values = new ArrayList<>();
-      values.add(TimestampedValue.of("a", new Instant(T1)));
-      values.add(TimestampedValue.of("a", new Instant(T2)));
-      values.add(TimestampedValue.of("a", new Instant(T3)));
+      values.add(tv("a", T1));
+      values.add(tv("a", T2));
+      values.add(tv("a", T3));
       return m_pipeline.apply(Create.timestamped(values));
    }
 

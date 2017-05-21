@@ -36,6 +36,8 @@ import org.junit.Test;
 
 import com.wtanaka.beam.SerializableIterator;
 
+import static com.wtanaka.beam.values.Timestamp.tv;
+
 /**
  * Test IteratorIO
  */
@@ -70,7 +72,7 @@ public class IteratorIOTest
          }
          m_count = (m_count > 0) ? m_count - 1 : m_count;
          Random random = new Random();
-         return TimestampedValue.of(String.valueOf(random.nextInt()),
+         return tv(String.valueOf(random.nextInt()),
             Instant.now());
       }
    }
