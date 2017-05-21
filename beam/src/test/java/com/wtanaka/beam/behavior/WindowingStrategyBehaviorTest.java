@@ -22,21 +22,30 @@ package com.wtanaka.beam.behavior;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.beam.sdk.coders.KvCoder;
+import org.apache.beam.sdk.coders.VarIntCoder;
 import org.apache.beam.sdk.testing.TestPipeline;
+import org.apache.beam.sdk.transforms.Combine;
+import org.apache.beam.sdk.transforms.Count;
 import org.apache.beam.sdk.transforms.Create;
 import org.apache.beam.sdk.transforms.Distinct;
+import org.apache.beam.sdk.transforms.GroupByKey;
+import org.apache.beam.sdk.transforms.WithKeys;
 import org.apache.beam.sdk.transforms.windowing.FixedWindows;
 import org.apache.beam.sdk.transforms.windowing.GlobalWindows;
+import org.apache.beam.sdk.transforms.windowing.InvalidWindows;
 import org.apache.beam.sdk.transforms.windowing.SlidingWindows;
 import org.apache.beam.sdk.transforms.windowing.Window;
 import org.apache.beam.sdk.transforms.windowing.WindowFn;
+import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.TimestampedValue;
 import org.joda.time.Duration;
-import org.joda.time.Instant;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+
+import com.wtanaka.beam.functions.Identity;
 
 import static com.wtanaka.beam.values.Timestamp.tv;
 
@@ -106,6 +115,48 @@ public class WindowingStrategyBehaviorTest
       Assert.assertTrue(
          distinct.getWindowingStrategy().getWindowFn().isCompatible(
             FixedWindows.of(Duration.standardMinutes(4))));
+      m_pipeline.run();
+   }
+
+   /**
+    * https://wtanaka.com/node/8237 claims that InvalidWindows<W> -- some
+    * grouping operations may return a PCollection with windowing strategy set
+    * to InvalidWindows if the input windowing strategy is nonsensical for the
+    * output
+    */
+   @Test
+   public void testInvalidWindowsAfterGroupBy()
+   {
+      // Create a windowed input
+      final PCollection<Integer> windowed = m_pipeline
+         .apply(Create.timestamped(
+            tv(1, 1),
+            tv(1, 2),
+            tv(1, 10),
+            tv(1, 25)
+         ))
+         .apply(Window.into(FixedWindows.of(Duration.millis(10))));
+
+      // Apply Combine.globally to it, and WindowFn is preserved
+      final PCollection<Long> counts = windowed
+         .apply(Combine.globally(Count.<Integer>combineFn())
+            .withoutDefaults());
+      Assert.assertFalse("Confirming that " + counts.getWindowingStrategy()
+         .getWindowFn() + " is not InvalidWindows", counts
+         .getWindowingStrategy()
+         .getWindowFn() instanceof InvalidWindows);
+
+      // Apply Combine.perKey to it
+      final PCollection<KV<Integer, Iterable<Integer>>> groupByKey =
+         windowed
+            .apply(WithKeys.of(new Identity<>()))
+            .setCoder(KvCoder.of(VarIntCoder.of(), VarIntCoder.of()))
+            .apply(GroupByKey.create());
+      Assert.assertFalse("Confirming that " + groupByKey
+         .getWindowingStrategy()
+         .getWindowFn() + " is not InvalidWindows", groupByKey
+         .getWindowingStrategy().getWindowFn()
+         instanceof InvalidWindows);
       m_pipeline.run();
    }
 }
