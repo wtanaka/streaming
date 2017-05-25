@@ -20,19 +20,38 @@
 package com.wtanaka.beam.functions;
 
 import org.apache.beam.sdk.transforms.SerializableFunction;
+import org.apache.beam.sdk.transforms.Top;
 import org.apache.beam.sdk.values.KV;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Tests for Composed
+ * Tests for Compose
  */
-public class ComposedTest
+public class ComposeTest
 {
+   @Test
+   public void testComposedComparator()
+   {
+      final Compose.Comp<String> comp = Compose.of(new Top.Largest<>(),
+         (SerializableFunction<String, Long>) Long::parseLong);
+      Assert.assertEquals(0, comp.compare("0", "0"));
+      Assert.assertEquals(-1, comp.compare("0", "1"));
+      Assert.assertEquals(1, comp.compare("1", "0"));
+   }
+
+   @Test
+   public void testConstruct()
+   {
+      new Compose()
+      {
+      };
+   }
+
    @Test
    public void testFunctionOfKvValue()
    {
-      Assert.assertEquals("5", Composed
+      Assert.assertEquals("5", Compose
          .of((SerializableFunction<Integer, String>) String::valueOf)
          .apply((SerializableFunction<KV<String, Integer>, Integer>)
             KV::getValue)
@@ -42,7 +61,7 @@ public class ComposedTest
    @Test
    public void testSmoke()
    {
-      final Composed<Double, String> doubleString = Composed
+      final Compose.Fn<Double, String> doubleString = Compose
          .of((SerializableFunction<Integer, String>) String::valueOf)
          .apply((SerializableFunction<Double, Integer>)
             x1 -> (int) x1.doubleValue());
