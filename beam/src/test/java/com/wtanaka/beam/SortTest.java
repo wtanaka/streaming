@@ -72,7 +72,7 @@ public class SortTest
          // String
          .apply(ByteArrayToString.of("UTF-8"))
          // PDone
-         .apply(LoggingIO.write("SortTest", Level.WARNING));
+         .apply(LoggingIO.readwrite("SortTest", Level.WARNING));
       m_pipeline.run();
    }
 }

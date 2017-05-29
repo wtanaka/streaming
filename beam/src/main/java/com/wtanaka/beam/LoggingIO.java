@@ -34,30 +34,13 @@ import org.apache.beam.sdk.values.PDone;
  */
 public class LoggingIO
 {
-   public static Write write(String loggerString, Level level)
-   {
-      return new Write(loggerString, level);
-   }
-
-   public static class Write extends
-      PTransform<PCollection<String>, PDone>
+   public static class ReadWrite<T> extends
+      PTransform<PCollection<T>, PCollection<T>>
    {
       private static final long serialVersionUID = 7349020373029956433L;
-      private final DoFn<String, Void> m_doFn;
+      private final DoFn<T, T> m_doFn;
 
-      Write(String logger, Level level)
-      {
-         m_doFn = new LogDoFn(logger, level);
-      }
-
-      @Override
-      public PDone expand(final PCollection<String> input)
-      {
-         final PCollection<Void> result = input.apply(ParDo.of(m_doFn));
-         return PDone.in(result.getPipeline());
-      }
-
-      static class LogDoFn extends DoFn<String, Void>
+      static class LogDoFn<T> extends DoFn<T, T>
       {
          private static final long serialVersionUID = -7710028799519540960L;
          private final String m_loggerString;
@@ -70,14 +53,32 @@ public class LoggingIO
          }
 
          @ProcessElement
-         public void processElement(ProcessContext context)
+         public void processElement(ProcessContext c)
          {
-            final String element = context.element();
+            final T element = c.element();
             Logger.getLogger(m_loggerString).log(m_level,
-               "<" + context.timestamp() + "> " + element
-                  + (context.pane() == PaneInfo.NO_FIRING ? "" :
-                  " [pane: " + context.pane() + "]"));
+               "<" + c.timestamp() + "> " + element
+                  + (c.pane() == PaneInfo.NO_FIRING ? "" :
+                  " [pane: " + c.pane() + "]"));
+            c.outputWithTimestamp(element, c.timestamp());
          }
       }
+
+      ReadWrite(String logger, Level level)
+      {
+         m_doFn = new LogDoFn<T>(logger, level);
+      }
+
+      @Override
+      public PCollection<T> expand(final PCollection<T> input)
+      {
+         return input.apply(ParDo.of(m_doFn));
+      }
+   }
+
+   public static <T> PTransform<PCollection<T>, PCollection<T>>
+      readwrite(String loggerString, Level level)
+   {
+      return new ReadWrite<T>(loggerString, level);
    }
 }

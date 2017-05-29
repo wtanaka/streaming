@@ -140,7 +140,7 @@ public class StreamingWcTest
          .apply(MapElements.into(strings()).via(
             (SerializableFunction<byte[], String>)
                b -> Arrays.toString(b)))
-         .apply(LoggingIO.write("DEBUG", Level.SEVERE));
+         .apply(LoggingIO.readwrite("DEBUG", Level.SEVERE));
 
       PAssert.that(output).containsInAnyOrder(
          "1 2 12".getBytes(),

@@ -22,6 +22,7 @@ package com.wtanaka.beam;
 import java.util.logging.Level;
 
 import org.apache.beam.sdk.io.GenerateSequence;
+import org.apache.beam.sdk.testing.PAssert;
 import org.apache.beam.sdk.testing.TestPipeline;
 import org.apache.beam.sdk.values.PCollection;
 import org.junit.Rule;
@@ -46,13 +47,24 @@ public class LoggingIOTest
    }
 
    @Test
-   public void testOf() throws Exception
+   public void testWrite()
    {
       final PCollection<Long> longs = m_pipeline.apply(
          GenerateSequence.from(0L).to(10L));
       final PCollection<String> strings = longs.apply(
          new StringValueOf<>());
-      strings.apply(LoggingIO.write("LoggingIOTest", Level.FINEST));
+      strings.apply(LoggingIO.readwrite("LoggingIOTest", Level.FINEST));
+      m_pipeline.run();
+   }
+
+   @Test
+   public void testReadWrite()
+   {
+      final PCollection<Long> longs = m_pipeline.apply(
+         GenerateSequence.from(0L).to(5L));
+      final PCollection<Long> passed = longs.apply(
+         LoggingIO.readwrite("LoggingIOTest", Level.FINEST));
+      PAssert.that(passed).containsInAnyOrder(0L, 1L, 2L, 3L, 4L);
       m_pipeline.run();
    }
 }

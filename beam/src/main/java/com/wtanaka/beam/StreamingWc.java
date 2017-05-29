@@ -33,6 +33,7 @@ import org.apache.beam.sdk.values.PCollection;
 
 import com.wtanaka.beam.transforms.ByteArrayToString;
 import com.wtanaka.beam.transforms.Sequential;
+import com.wtanaka.beam.transforms.Terminate;
 
 /**
  * <p>Implementation of a streaming version of StreamingWc that outputs
@@ -132,7 +133,7 @@ public class StreamingWc
       public PCollection<byte[]> expand(final PCollection<byte[]> input)
       {
          input.apply(ByteArrayToString.of("UTF-8")).apply
-            (LoggingIO.write("StreamingWc.OutTransform", Level.SEVERE));
+            (LoggingIO.readwrite("StreamingWc.OutTransform", Level.SEVERE));
          final PCollection<byte[]> triggered = input.apply(
             Window.<byte[]>configure().triggering(
                Repeatedly.forever
@@ -157,9 +158,10 @@ public class StreamingWc
    {
       MainRunner.cmdLine(
          StreamIO.stdinUnbounded(),
-         Sequential.of(
+         Sequential.of(Sequential.of(
             ByteArrayToString.of("UTF-8"),
-            LoggingIO.write("StreamingWc", Level.WARNING)),
+            LoggingIO.readwrite("StreamingWc", Level.WARNING)),
+            Terminate.of()),
          args,
          new Transform());
    }
