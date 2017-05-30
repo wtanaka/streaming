@@ -65,6 +65,6 @@ public class ByteArrayToString
    @Override
    public PCollection<String> expand(final PCollection<byte[]> input)
    {
-      return input.apply(MapElements.via(m_mapFn));
+      return input.apply(MapElements.<byte[], String>via(m_mapFn));
    }
 }
