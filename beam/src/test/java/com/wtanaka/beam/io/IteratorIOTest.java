@@ -19,11 +19,14 @@
  */
 package com.wtanaka.beam.io;
 
+import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.Random;
 
 import org.apache.beam.sdk.PipelineResult;
 import org.apache.beam.sdk.coders.StringUtf8Coder;
+import org.apache.beam.sdk.io.UnboundedSource;
+import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.repackaged.com.google.common.collect.Lists;
 import org.apache.beam.sdk.testing.PAssert;
 import org.apache.beam.sdk.testing.TestPipeline;
@@ -74,6 +77,80 @@ public class IteratorIOTest
          Random random = new Random();
          return tv(String.valueOf(random.nextInt()),
             Instant.now());
+      }
+   }
+
+   /**
+    * hasNext returns true, next() raises Exception
+    */
+   private static class BrokenIterator implements
+      SerializableIterator<TimestampedValue<String>>
+   {
+      private static final long serialVersionUID = 1L;
+
+      @Override
+      public boolean hasNext()
+      {
+         return true;
+      }
+
+      @Override
+      public TimestampedValue<String> next()
+      {
+         throw new NoSuchElementException();
+      }
+   }
+
+   @Test
+   public void testAdvanceEmpty() throws IOException
+   {
+      final IteratorIO.Unbound<String, BrokenIterator> unbound =
+         new IteratorIO.Unbound<>(new BrokenIterator(),
+            StringUtf8Coder.of());
+      final UnboundedSource.UnboundedReader<String>
+         reader = unbound.createReader(PipelineOptionsFactory.create(), null);
+      Assert.assertFalse(reader.advance());
+   }
+
+   @Test
+   public void testConstruct()
+   {
+      new IteratorIO();
+   }
+
+   @Test
+   public void testGetCurrentEmpty() throws IOException
+   {
+      final IteratorIO.Unbound<String, RandomIterator> unbound =
+         new IteratorIO.Unbound<>(new RandomIterator(10),
+            StringUtf8Coder.of());
+      final UnboundedSource.UnboundedReader<String>
+         reader = unbound.createReader(PipelineOptionsFactory.create(), null);
+      try
+      {
+         reader.getCurrent();
+         Assert.fail();
+      }
+      catch (NoSuchElementException e)
+      {
+      }
+   }
+
+   @Test
+   public void testGetCurrentTimestampEmpty() throws IOException
+   {
+      final IteratorIO.Unbound<String, RandomIterator> unbound =
+         new IteratorIO.Unbound<>(new RandomIterator(10),
+            StringUtf8Coder.of());
+      final UnboundedSource.UnboundedReader<String>
+         reader = unbound.createReader(PipelineOptionsFactory.create(), null);
+      try
+      {
+         reader.getCurrentTimestamp();
+         Assert.fail();
+      }
+      catch (NoSuchElementException e)
+      {
       }
    }
 

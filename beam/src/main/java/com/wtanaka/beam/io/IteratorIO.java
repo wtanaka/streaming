@@ -50,7 +50,7 @@ public class IteratorIO
     * UnboundedSource class that draws elements from an Iterator.  Possibly
     * useful for experimenting with Beam.
     */
-   private static class Unbound<T, IteratorT extends
+   static class Unbound<T, IteratorT extends
       Iterator<TimestampedValue<T>> & Serializable>
       extends UnboundedSource<T, EmptyCheckpointMark>
       implements Serializable
