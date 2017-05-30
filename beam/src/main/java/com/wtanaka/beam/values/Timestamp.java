@@ -35,10 +35,10 @@ public class Timestamp
    /**
     * Syntactical sugar to create a TimestampedValue for unit tests
     *
-    * @param value
-    * @param milliseconds
-    * @param <V>
-    * @return
+    * @param value wrapped value
+    * @param milliseconds associated timestamp
+    * @param <V> type of value
+    * @return TimestampedValue object
     */
    public static <V> TimestampedValue<V> tv(V value, long milliseconds)
    {
@@ -48,10 +48,10 @@ public class Timestamp
    /**
     * Syntactical sugar to create a TimestampedValue for unit tests
     *
-    * @param value
-    * @param <V>
-    * @param instant time
-    * @return
+    * @param value wrapped value
+    * @param <V> type of value
+    * @param instant time associated timestamp
+    * @return TimestampedValue object
     */
    public static <V> TimestampedValue<V> tv(V value, Instant instant)
    {
