@@ -22,7 +22,9 @@ package com.wtanaka.beam;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.List;
+import java.util.logging.Level;
 
 import org.apache.beam.sdk.coders.Coder;
 import org.apache.beam.sdk.io.BoundedSource;
@@ -32,7 +34,14 @@ import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.testing.PAssert;
 import org.apache.beam.sdk.testing.TestPipeline;
 import org.apache.beam.sdk.transforms.Create;
+import org.apache.beam.sdk.transforms.MapElements;
+import org.apache.beam.sdk.transforms.SimpleFunction;
+import org.apache.beam.sdk.transforms.Sum;
+import org.apache.beam.sdk.transforms.windowing.AfterPane;
 import org.apache.beam.sdk.transforms.windowing.BoundedWindow;
+import org.apache.beam.sdk.transforms.windowing.Repeatedly;
+import org.apache.beam.sdk.transforms.windowing.Trigger;
+import org.apache.beam.sdk.transforms.windowing.Window;
 import org.apache.beam.sdk.values.PCollection;
 import org.junit.Assert;
 import org.junit.Before;
@@ -55,6 +64,16 @@ public class StreamIOTest
    private StreamIO.BoundSource m_boundSourceByteSource;
    private StreamIO.UnboundSource m_unbounded;
    private StreamIO.UnboundSource.UnboundReader m_reader;
+
+   public static class IntegerParseInt extends SimpleFunction<String, Integer>
+      implements Serializable
+   {
+      @Override
+      public Integer apply(final String input)
+      {
+         return Integer.parseInt(input);
+      }
+   }
 
    private static TestPipeline newPipeline()
    {
@@ -294,6 +313,27 @@ public class StreamIOTest
    public void testStdinBound()
    {
       StreamIO.stdinBound();
+   }
+
+   @Test
+   public void testStreamIoReadUnbounded()
+   {
+      SerializableByteArrayInputStream inStream =
+         new SerializableByteArrayInputStream
+            (new byte[]{0x32, 0x0a, 0x33, 0x0a, 0x35, 0x0a, 0x37, 0x0a, 0x31,
+               0x31, 0x0a, 0x31, 0x33, 0x0a});
+      final Trigger trigger = Repeatedly.forever(
+         AfterPane.elementCountAtLeast(1));
+      final PCollection<Integer> output = TestPipeline.create()
+         .enableAbandonedNodeEnforcement(true)
+         .apply(StreamIO.readUnbounded(inStream))
+         .apply(Window.<byte[]>configure().triggering(trigger)
+            .accumulatingFiredPanes())
+         .apply(ByteArrayToString.of("UTF-8"))
+         .apply(MapElements.<String, Integer>via(new IntegerParseInt()))
+         .apply(Sum.integersGlobally())
+         .apply(LoggingIO.readwrite("AfterPaneBehavior", Level.WARNING));
+      PAssert.thatSingleton(output).isEqualTo(2 + 3 + 5 + 7 + 11 + 13);
    }
 
    @Test
