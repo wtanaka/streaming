@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.util.logging.Level;
 
 import org.apache.beam.sdk.testing.TestPipeline;
 import org.apache.beam.sdk.transforms.Create;
@@ -72,7 +71,7 @@ public class SortTest
          // String
          .apply(ByteArrayToString.of("UTF-8"))
          // PDone
-         .apply(LoggingIO.readwrite("SortTest", Level.WARNING));
+         .apply(LoggingIO.warn(SortTest.class));
       m_pipeline.run();
    }
 }

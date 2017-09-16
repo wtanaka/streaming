@@ -24,7 +24,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.apache.beam.sdk.coders.Coder;
 import org.apache.beam.sdk.io.BoundedSource;
@@ -332,7 +331,7 @@ public class StreamIOTest
          .apply(ByteArrayToString.of("UTF-8"))
          .apply(MapElements.<String, Integer>via(new IntegerParseInt()))
          .apply(Sum.integersGlobally())
-         .apply(LoggingIO.readwrite("AfterPaneBehavior", Level.WARNING));
+         .apply(LoggingIO.warn(StreamIOTest.class));
       PAssert.thatSingleton(output).isEqualTo(2 + 3 + 5 + 7 + 11 + 13);
    }
 

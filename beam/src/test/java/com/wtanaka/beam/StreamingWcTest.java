@@ -26,7 +26,6 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.apache.beam.sdk.coders.ByteArrayCoder;
 import org.apache.beam.sdk.testing.PAssert;
@@ -140,7 +139,7 @@ public class StreamingWcTest
          .apply(MapElements.into(strings()).via(
             (SerializableFunction<byte[], String>)
                b -> Arrays.toString(b)))
-         .apply(LoggingIO.readwrite("DEBUG", Level.SEVERE));
+         .apply(LoggingIO.error(StreamingWcTest.class));
 
       PAssert.that(output).containsInAnyOrder(
          "1 2 12".getBytes(),
