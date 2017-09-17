@@ -33,7 +33,16 @@ user_network:
 	docker network inspect flink_nw || docker network create -d bridge flink_nw
 
 galaxy:
-	ansible-galaxy install --force --ignore-errors -r galaxy-requirements.txt -p roles/
+	allpids=""; \
+	for i in ansible/requirements/*.txt; do \
+		ansible-galaxy install --force --ignore-errors \
+			-r "$$i" -p roles/ & \
+		pid=$$!; \
+		allpids="$$allpids $$pid"; \
+	done; \
+	for pid in $$allpids; do \
+		wait $$pid; \
+	done;
 
 vendor/bundle: bundle-bin
 	bundle install --path "$@"
