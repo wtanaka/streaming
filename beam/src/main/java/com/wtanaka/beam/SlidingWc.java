@@ -22,22 +22,21 @@ package com.wtanaka.beam;
 import org.apache.beam.sdk.transforms.Combine;
 import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.PTransform;
-import org.apache.beam.sdk.transforms.windowing.AfterPane;
-import org.apache.beam.sdk.transforms.windowing.Repeatedly;
+import org.apache.beam.sdk.transforms.windowing.SlidingWindows;
 import org.apache.beam.sdk.transforms.windowing.Window;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.TypeDescriptor;
+import org.joda.time.Duration;
 
 /**
- * <p>Implementation of a streaming version of StreamingWc that outputs
- * statistics periodically
+ * <p>Implementation of sliding window word count
  * <p>
- * yes hello world | java -cp beam/build/libs/beam-all.jar
- * com.wtanaka.beam.StreamingWc
+ * <p>
+ * while :; do echo hello world; sleep 2; done | java -cp
+ * beam/build/libs/beam-all.jar com.wtanaka.beam.SlidingWc
  */
-public class StreamingWc
+public class SlidingWc
 {
-
    public static class Transform extends PTransform<PCollection<byte[]>,
       PCollection<byte[]>>
    {
@@ -46,13 +45,11 @@ public class StreamingWc
       @Override
       public PCollection<byte[]> expand(final PCollection<byte[]> input)
       {
-         final PCollection<byte[]> triggered = input.apply(
-            Window.<byte[]>configure()
-               .triggering(
-                  Repeatedly.forever(AfterPane.elementCountAtLeast(1)))
-               .accumulatingFiredPanes());
-         PCollection<Wc.Stats> stats = triggered.apply(
-            Combine.globally(new Wc.StatsCombineFn()));
+         final PCollection<byte[]> windowed = input.apply(
+            Window.into(SlidingWindows.of(Duration.standardSeconds
+               (10)).every(Duration.standardSeconds(1))));
+         PCollection<Wc.Stats> stats = windowed.apply(
+            Combine.globally(new Wc.StatsCombineFn()).withoutDefaults());
          return stats.apply(MapElements
             .into(TypeDescriptor.of(byte[].class))
             .via(Wc::bytesFor));

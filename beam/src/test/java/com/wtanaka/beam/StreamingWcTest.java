@@ -19,45 +19,43 @@
  */
 package com.wtanaka.beam;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.List;
-
 import org.apache.beam.sdk.coders.ByteArrayCoder;
 import org.apache.beam.sdk.testing.PAssert;
 import org.apache.beam.sdk.testing.TestPipeline;
 import org.apache.beam.sdk.testing.TestStream;
 import org.apache.beam.sdk.transforms.Create;
-import org.apache.beam.sdk.transforms.MapElements;
-import org.apache.beam.sdk.transforms.SerializableFunction;
 import org.apache.beam.sdk.values.PCollection;
 import org.joda.time.Instant;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
+
 import static com.wtanaka.beam.values.Timestamp.tv;
-import static org.apache.beam.sdk.values.TypeDescriptors.strings;
 
 public class StreamingWcTest
 {
    @Rule
    public TestPipeline m_pipeline = TestPipeline.create()
-      .enableAbandonedNodeEnforcement(true);
+         .enableAbandonedNodeEnforcement(true);
 
    @Test
    public void mergeAccumulators() throws Exception
    {
-      final StreamingWc.WcStats stats1 = new StreamingWc.WcStats(1, 2, 3);
-      final StreamingWc.WcStats stats2 = new StreamingWc.WcStats(4, 5, 6);
-      final List<StreamingWc.WcStats> stats = Arrays.asList(stats1,
+      final Wc.Stats stats1 = new Wc.Stats(1, 2, 3);
+      final Wc.Stats stats2 = new Wc.Stats(4, 5, 6);
+      final List<Wc.Stats> stats = Arrays.asList(stats1,
          stats2);
-      final StreamingWc.StatsCombineFn fn = new StreamingWc.StatsCombineFn();
-      final StreamingWc.WcStats result = fn.mergeAccumulators(stats);
+      final Wc.StatsCombineFn fn = new Wc.StatsCombineFn();
+      final Wc.Stats result = fn.mergeAccumulators(stats);
       Assert.assertEquals(5, result.getNumLines());
       Assert.assertEquals(7, result.getNumWords());
       Assert.assertEquals(9, result.getNumBytes());
@@ -126,6 +124,9 @@ public class StreamingWcTest
          .advanceWatermarkTo(new Instant(0))
          .addElements(tv(bytes, 200))
          .advanceWatermarkTo(new Instant(1))
+         .advanceWatermarkTo(new Instant(101))
+         .advanceWatermarkTo(new Instant(200))
+         .advanceWatermarkTo(new Instant(201))
          .addElements(
             tv(bytes, 10000), tv(bytes, 10000), tv(bytes, 10000),
             tv(bytes, 10000), tv(bytes, 10000), tv(bytes, 10000),
@@ -135,17 +136,11 @@ public class StreamingWcTest
       final PCollection<byte[]> output =
          m_pipeline.apply(input).apply(new StreamingWc.Transform());
 
-      output
-         .apply(MapElements.into(strings()).via(
-            (SerializableFunction<byte[], String>)
-               b -> Arrays.toString(b)))
-         .apply(LoggingIO.error(StreamingWcTest.class));
-
       PAssert.that(output).containsInAnyOrder(
-         "1 2 12".getBytes(),
-         "2 4 24".getBytes(),
-         "10 20 120".getBytes(), // EARLY
-         "10 20 120".getBytes() // ON TIME
+         "1 2 12\n".getBytes(StandardCharsets.UTF_8),
+         "2 4 24\n".getBytes(StandardCharsets.UTF_8),
+         "10 20 120\n".getBytes(StandardCharsets.UTF_8), // EARLY
+         "10 20 120\n".getBytes(StandardCharsets.UTF_8) // ON TIME
       );
       m_pipeline.run();
    }
