@@ -21,8 +21,8 @@ package com.wtanaka.beam;
 
 import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.PTransform;
-import org.apache.beam.sdk.transforms.SimpleFunction;
 import org.apache.beam.sdk.values.PCollection;
+import org.apache.beam.sdk.values.TypeDescriptors;
 
 /**
  * PCollection that converts to String using String.valueOf
@@ -36,13 +36,6 @@ public class StringValueOf<T> extends PTransform<PCollection<T>,
    public PCollection<String> expand(final PCollection<T> input)
    {
       return input.apply(
-         MapElements.<T, String>via(new SimpleFunction<T, String>()
-         {
-            @Override
-            public String apply(final T input)
-            {
-               return String.valueOf(input);
-            }
-         }));
+         MapElements.into(TypeDescriptors.strings()).via(String::valueOf));
    }
 }

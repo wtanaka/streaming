@@ -171,12 +171,9 @@ public class PercentMatch
                }))
             // Count KV<KV<K,Integer>, Long>
             .apply(Count.perElement())
-            .apply(
-               MapElements.<KV<KV<K, Integer>, Long>, KV<K, KV<Integer,
-                  Long>>>via(
-                  new
-                     SimpleFunction<KV<KV<K, Integer>, Long>, KV<K,
-                        KV<Integer, Long>>>()
+            .apply(MapElements.via(
+                     new SimpleFunction<KV<KV<K, Integer>, Long>,
+                           KV<K, KV<Integer, Long>>>()
                      {
                         @Override
                         public KV<K, KV<Integer, Long>> apply(

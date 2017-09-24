@@ -23,8 +23,9 @@ import java.nio.charset.Charset;
 
 import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.PTransform;
-import org.apache.beam.sdk.transforms.SimpleFunction;
+import org.apache.beam.sdk.transforms.SerializableFunction;
 import org.apache.beam.sdk.values.PCollection;
+import org.apache.beam.sdk.values.TypeDescriptor;
 
 /**
  * Convert string to byte
@@ -48,15 +49,8 @@ public class StringToByteArray
    @Override
    public PCollection<byte[]> expand(final PCollection<String> input)
    {
-      return input
-         .apply(MapElements.via(new SimpleFunction<String, byte[]>()
-         {
-            @Override
-            public byte[] apply(final String input1)
-            {
-               final Charset charset = Charset.forName(m_charset);
-               return input1.getBytes(charset);
-            }
-         }));
+      return input.apply(MapElements.into(TypeDescriptor.of(byte[].class))
+         .via((SerializableFunction<String, byte[]>) str -> str.getBytes(
+            Charset.forName(m_charset))));
    }
 }
