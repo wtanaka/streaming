@@ -76,4 +76,17 @@ public class MainRunnerTest
    {
       new MainRunner();
    }
+
+   @Test
+   public void testNullTransform()
+   {
+      try
+      {
+         MainRunner.cmdLine(null, null, null, null);
+         Assert.fail("Expected exception raised");
+      }
+      catch (AssertionError e)
+      {
+      }
+   }
 }
