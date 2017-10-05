@@ -19,11 +19,10 @@
  */
 package com.wtanaka.beam.functions;
 
-import java.io.Serializable;
-
 import org.apache.beam.sdk.transforms.SerializableFunction;
+import org.apache.beam.sdk.transforms.SimpleFunction;
 
-public class Identity<T> implements
+public class Identity<T> extends SimpleFunction<T, T> implements
    SerializableFunction<T, T>
 {
    private static final long serialVersionUID = 1L;
