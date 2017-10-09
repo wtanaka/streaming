@@ -29,16 +29,14 @@ import org.apache.beam.sdk.values.TypeDescriptor;
 import org.joda.time.Duration;
 
 /**
- * <p>Implementation of sliding window word count
- * <p>
- * <p>
- * while :; do echo hello world; sleep 2; done | java -cp
- * beam/build/libs/beam-all.jar com.wtanaka.beam.SlidingWc
+ * <p>Implementation of sliding window word count.</p>
+ * <p>Example usage: {@code while :; do echo hello world; sleep 2; done | java
+ * -cp beam/build/libs/beam-all.jar com.wtanaka.beam.SlidingWc}</p>
  */
 public class SlidingWc
 {
    public static class Transform extends PTransform<PCollection<byte[]>,
-      PCollection<byte[]>>
+         PCollection<byte[]>>
    {
       private static final long serialVersionUID = 1L;
 
@@ -46,13 +44,13 @@ public class SlidingWc
       public PCollection<byte[]> expand(final PCollection<byte[]> input)
       {
          final PCollection<byte[]> windowed = input.apply(
-            Window.into(SlidingWindows.of(Duration.standardSeconds
-               (10)).every(Duration.standardSeconds(1))));
+               Window.into(SlidingWindows.of(Duration.standardSeconds
+                     (10)).every(Duration.standardSeconds(1))));
          PCollection<Wc.Stats> stats = windowed.apply(
-            Combine.globally(new Wc.StatsCombineFn()).withoutDefaults());
+               Combine.globally(new Wc.StatsCombineFn()).withoutDefaults());
          return stats.apply(MapElements
-            .into(TypeDescriptor.of(byte[].class))
-            .via(Wc::bytesFor));
+               .into(TypeDescriptor.of(byte[].class))
+               .via(Wc::bytesFor));
       }
    }
 

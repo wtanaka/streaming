@@ -136,6 +136,7 @@ public class Monotonic
     * @param <V> these values are assumed to have an ordering
     * @param <OutT> the result value of the callback for the elements
     *       that get traversed
+    * @param <ComparatorT> Serializable Comparator of V
     * @return a PTransform which calls the {@code callback} on a subset of
     *       elements in weakly increasing order
     */
@@ -168,6 +169,7 @@ public class Monotonic
     * @param <V> these values are assumed to have an ordering
     * @param <OutT> the result value of the callback for the elements
     *       that get traversed
+    * @param <ComparatorT> Serializable Comparator of V
     * @return a PTransform which calls the {@code callback} on a subset of
     *       elements in weakly increasing order
     */
@@ -199,6 +201,7 @@ public class Monotonic
     * @param <V> these values are assumed to have an ordering
     * @param <OutT> the result value of the callback for the elements
     *       that get traversed
+    * @param <ComparatorT> Serializable Comparator of V
     * @return a PTransform which calls the {@code callback} on a subset of
     *       elements in weakly increasing order
     */
@@ -230,6 +233,7 @@ public class Monotonic
     * @param <V> these values are assumed to have an ordering
     * @param <OutT> the result value of the callback for the elements
     *       that get traversed
+    * @param <ComparatorT> Serializable Comparator of V
     * @return a PTransform which calls the {@code callback} on a subset of
     *       elements in weakly increasing order
     */
