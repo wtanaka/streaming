@@ -34,8 +34,10 @@ import org.apache.beam.sdk.coders.VarIntCoder;
 import org.apache.beam.sdk.testing.PAssert;
 import org.apache.beam.sdk.testing.TestPipeline;
 import org.apache.beam.sdk.testing.TestStream;
+import org.apache.beam.sdk.transforms.Create;
 import org.apache.beam.sdk.transforms.SerializableComparator;
 import org.apache.beam.sdk.transforms.SerializableFunction;
+import org.apache.beam.sdk.transforms.Top;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 import org.junit.Assert;
@@ -196,6 +198,34 @@ public class MonotonicTest
       {
          Assert.assertTrue(Ordering.natural().isStrictlyOrdered(filtered));
       }
+   }
+
+   /**
+    * Test using comparators from {@link org.apache.beam.sdk.transforms.Top}
+    */
+   @Test
+   public void testTopComparators()
+   {
+      Recorder<KV<Integer, Integer>> recorder = new Recorder<>(
+            "testTopComparators");
+      final PCollection<KV<Integer, Integer>> source = m_pipeline
+            .apply(Create.empty(
+                  KvCoder.of(VarIntCoder.of(), VarIntCoder.of())));
+      // Mainly making sure this compiles
+      source.apply("strictlyIncreasing",
+            Monotonic.strictlyIncreasing(new Top.Largest(), VarIntCoder.of(),
+                  new KVCallback(recorder), kvIntIntCoder()));
+      source.apply("strictlyDecreasing",
+            Monotonic.strictlyDecreasing(new Top.Largest(), VarIntCoder.of(),
+                  new KVCallback(recorder), kvIntIntCoder()));
+      source.apply("weaklyIncreasing",
+            Monotonic.weaklyIncreasing(new Top.Largest(), VarIntCoder.of(),
+                  new KVCallback(recorder), kvIntIntCoder()));
+      source.apply("weaklyDecreasing",
+            Monotonic.weaklyDecreasing(new Top.Largest(), VarIntCoder.of(),
+                  new KVCallback(recorder), kvIntIntCoder()));
+      // Needed because of @Rule check
+      m_pipeline.run();
    }
 
    @Test

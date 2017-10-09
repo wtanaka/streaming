@@ -19,6 +19,7 @@
  */
 package com.wtanaka.beam.transforms;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 import org.apache.beam.sdk.annotations.Experimental;
@@ -29,7 +30,6 @@ import org.apache.beam.sdk.state.ValueState;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.PTransform;
 import org.apache.beam.sdk.transforms.ParDo;
-import org.apache.beam.sdk.transforms.SerializableComparator;
 import org.apache.beam.sdk.transforms.SerializableFunction;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
@@ -88,17 +88,17 @@ public class Monotonic
       }
    }
 
-   private static class Transform<K, V, OutT> extends
-         PTransform<PCollection<KV<K, V>>,
-               PCollection<OutT>>
+   private static class Transform<K, V, OutT, ComparatorT extends
+         Comparator<V> & Serializable>
+         extends PTransform<PCollection<KV<K, V>>, PCollection<OutT>>
    {
       private final SerializableFunction<KV<K, V>, OutT> m_callback;
-      private final SerializableComparator<V> m_comparator;
+      private final ComparatorT m_comparator;
       private final Coder<OutT> m_outCoder;
       private final SerializableFunction<Integer, Boolean> m_predicate;
       private final Coder<V> m_valueCoder;
 
-      private Transform(SerializableComparator<V> comparator,
+      private Transform(ComparatorT comparator,
             SerializableFunction<Integer, Boolean> comparatorPredicate,
             Coder<V> valueCoder, SerializableFunction<KV<K, V>, OutT> callback,
             Coder<OutT> outCoder)
@@ -140,9 +140,10 @@ public class Monotonic
     *       elements in weakly increasing order
     */
    @Experimental(Experimental.Kind.STATE)
-   public static <K, V, OutT> PTransform<PCollection<KV<K, V>>,
+   public static <K, V, OutT, ComparatorT extends Comparator<V> & Serializable>
+   PTransform<PCollection<KV<K, V>>,
          PCollection<OutT>> strictlyDecreasing(
-         SerializableComparator<V> comparator, Coder<V> valueCoder,
+         ComparatorT comparator, Coder<V> valueCoder,
          SerializableFunction<KV<K, V>, OutT> callback, Coder<OutT> outCoder)
    {
       return new Transform<>(comparator, PREDICATE_STRICTLY_DECREASING,
@@ -171,9 +172,9 @@ public class Monotonic
     *       elements in weakly increasing order
     */
    @Experimental(Experimental.Kind.STATE)
-   public static <K, V, OutT> PTransform<PCollection<KV<K, V>>,
-         PCollection<OutT>> strictlyIncreasing(
-         SerializableComparator<V> comparator, Coder<V> valueCoder,
+   public static <K, V, OutT, ComparatorT extends Comparator<V> & Serializable>
+   PTransform<PCollection<KV<K, V>>, PCollection<OutT>> strictlyIncreasing(
+         ComparatorT comparator, Coder<V> valueCoder,
          SerializableFunction<KV<K, V>, OutT> callback, Coder<OutT> outCoder)
    {
       return new Transform<>(comparator, PREDICATE_STRICTLY_INCREASING,
@@ -202,9 +203,10 @@ public class Monotonic
     *       elements in weakly increasing order
     */
    @Experimental(Experimental.Kind.STATE)
-   public static <K, V, OutT> PTransform<PCollection<KV<K, V>>,
+   public static <K, V, OutT, ComparatorT extends Comparator<V> & Serializable>
+   PTransform<PCollection<KV<K, V>>,
          PCollection<OutT>> weaklyDecreasing(
-         SerializableComparator<V> comparator, Coder<V> valueCoder,
+         ComparatorT comparator, Coder<V> valueCoder,
          SerializableFunction<KV<K, V>, OutT> callback, Coder<OutT> outCoder)
    {
       return new Transform<>(comparator, PREDICATE_WEAKLY_DECREASING,
@@ -232,9 +234,10 @@ public class Monotonic
     *       elements in weakly increasing order
     */
    @Experimental(Experimental.Kind.STATE)
-   public static <K, V, OutT> PTransform<PCollection<KV<K, V>>,
+   public static <K, V, OutT, ComparatorT extends Comparator<V> & Serializable>
+   PTransform<PCollection<KV<K, V>>,
          PCollection<OutT>> weaklyIncreasing(
-         SerializableComparator<V> comparator, Coder<V> valueCoder,
+         ComparatorT comparator, Coder<V> valueCoder,
          SerializableFunction<KV<K, V>, OutT> callback, Coder<OutT> outCoder)
    {
       return new Transform<>(comparator, PREDICATE_WEAKLY_INCREASING,
